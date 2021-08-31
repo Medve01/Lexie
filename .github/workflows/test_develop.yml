@@ -20,7 +20,7 @@ jobs:
       fail-fast: false
       matrix:
         python-version: [3.9]
-        poetry-version: [1.0, 1.1.6]
+        poetry-version: [1.1.8]
         os: [ubuntu-latest]
     runs-on: ${{ matrix.os }}
     steps:
@@ -36,9 +36,5 @@ jobs:
         run: poetry install
       - name: Run tests
         run: poetry run tox
-      - name: Upload test results
-        uses: actions/upload-artifact@v2.2.4
-        with:
-          name: pytest-results
-          path: pytest-report.html
+
 
