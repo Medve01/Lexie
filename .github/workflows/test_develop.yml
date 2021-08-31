@@ -36,3 +36,9 @@ jobs:
         run: poetry install
       - name: Run tests
         run: poetry run pytest
+      - name: Upload test results
+        uses: actions/upload-artifact@v2.2.4
+        with:
+          name: pytest-results
+          path: pytest-report.html
+
