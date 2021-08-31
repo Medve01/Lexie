@@ -35,7 +35,7 @@ jobs:
       - name: Install project
         run: poetry install
       - name: Run tests
-        run: poetry run pytest
+        run: poetry run pytest --html=pytest-report.html
       - name: Upload test results
         uses: actions/upload-artifact@v2.2.4
         with:
