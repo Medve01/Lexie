@@ -28,6 +28,8 @@ def test_get_device(client):
     response = json.loads(res.data)
     assert response == {
             'device_id': '1234',
+            'device_name': 'Test device',
+            'device_type': 'test devicetype',
             'ison': False,
             'online': True
         }

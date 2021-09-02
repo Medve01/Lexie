@@ -145,3 +145,6 @@ dmypy.json
 # pytest html report
 assets/**
 pytest-report.html
+
+# Lexie database
+lexie.db
