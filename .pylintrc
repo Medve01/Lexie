@@ -123,7 +123,8 @@ disable=import-star-module-level,
         nonzero-method,
         map-builtin-not-iterating,W0201,
         duplicate-code,
-        ungrouped-imports
+        ungrouped-imports,
+        missing-module-docstring
 
 
 [REPORTS]

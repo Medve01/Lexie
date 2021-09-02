@@ -1,6 +1,10 @@
 """main Lexie app"""
 from flask import Flask
 
+from . import api
+
+# from .devices.device import LexieDevice
+
 
 def create_app():
     """default app"""
@@ -8,5 +12,7 @@ def create_app():
 
     @app.route('/')
     def index():
-        return 'Hello World!'
+        return 'Nothing to see here - yet.'
+
+    app.register_blueprint(api.api_bp)
     return app

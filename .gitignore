@@ -139,6 +139,9 @@ dmypy.json
 # Ignore all local history of files
 **/.history
 
+### VisualStudioCode notes ###
+.vscode/notes.txt
+
 # pytest html report
 assets/**
 pytest-report.html
