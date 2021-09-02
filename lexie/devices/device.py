@@ -33,8 +33,7 @@ class LexieDevice: # pylint: disable=too-few-public-methods
             "ison": self.ison,
         }
         return status_dict
-    
-    # TODO: 
+
     # @staticmethod
     # def new(
     #     device_name: str,
