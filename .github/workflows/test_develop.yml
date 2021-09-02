@@ -36,5 +36,7 @@ jobs:
         run: poetry install
       - name: Run tests
         run: poetry run tox
+      - name: Check coverage
+        run: python check_coverage.py 100
 
 
