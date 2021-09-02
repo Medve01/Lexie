@@ -16,5 +16,5 @@ if coverage_percent < coverage_threshold:
         )
     sys.exit(1)
 else:
-    print('Good enough coverage! (%s)', coverage_percent)
+    print('Good enough coverage! (' + str(coverage_percent) + ')')
     sys.exit(0)
