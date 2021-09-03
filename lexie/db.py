@@ -21,7 +21,7 @@ def close_db(e=None): #pylint:disable=unused-argument,invalid-name
     if database is not None:
         database.close()
 
-def init__db(): #pragma: nocover
+def init__db():
     """ build db from schema"""
     database = get_db()
     with current_app.open_resource('schema.sql') as schema_file:

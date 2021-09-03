@@ -1,10 +1,13 @@
 import pytest
 from lexie.app import create_app
+from lexie.db import init__db
 from lexie.devices.device import LexieDevice
 
 @pytest.fixture
 def app():
     _app = create_app()
+    with _app.app_context():
+        init__db()
     return _app
 
 def test_device_existing_device(app):
