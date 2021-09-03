@@ -1,6 +1,7 @@
 from typing import Any
 
 from flask import current_app as app
+from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
 from lexie.db import get_db
 
@@ -34,16 +35,23 @@ class LexieDevice: # pylint: disable=too-few-public-methods
         }
         return status_dict
 
-    # @staticmethod
-    # def new(
-    #     device_name: str,
-    #     device_type: str,
-    # ):
-    #     """ Static method to store a new device in database.
-    #     device_name and device_type are mandatory """
-    #     with app.app_context():
-    #         lexie_db = get_db()
-    #         try:
-    #             db.execute(
-    #                 "INSERT INTO device (device_name, device_type)"
-    #             )
+    @staticmethod
+    def new(
+        device_name: str,
+        device_type: str,
+    ):
+        """ Static method to store a new device in database.
+        device_name and device_type are mandatory """
+        device_id = uuid()
+        with app.app_context():
+            lexie_db = get_db()
+            try:
+                lexie_db.execute(
+                    "INSERT INTO device (device_id, device_name, device_type) values (?, ?, ?)",
+                    (device_id, device_name, device_type)
+                )
+                lexie_db.commit()
+            except Exception: # pragma: nocover
+                print('Database error')
+                raise
+            return LexieDevice(device_id = device_id)

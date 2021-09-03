@@ -33,3 +33,8 @@ def test_device_nonexisting_device(app):
         device_id = '12345'
         with pytest.raises(Exception):
             testdevice = LexieDevice(device_id)
+
+def test_device_new(app):
+    with app.app_context():
+        test_device = LexieDevice.new(device_name='Test device', device_type="Test devicetype")
+        assert test_device.device_name == 'Test device' and test_device.device_type == 'Test devicetype'
