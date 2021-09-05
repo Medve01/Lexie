@@ -29,12 +29,4 @@ def test_default_page(client):
 def test_get_device(client):
     """" tests /api/device/device_id"""
     res = client.get('/api/device/1234')
-    response = json.loads(res.data)
-    assert response == {
-            'device_id': '1234',
-            'device_name': 'Test device',
-            'device_type': 'test devicetype',
-            'ison': False,
-            'online': True
-        }
-    
+    assert res.data == b'{"device_id":"1234","device_name":"Test device","device_type":{"devicetype_id":1,"devicetype_name":"Test devicetype"}}\n' # pylint:disable=line-too-long

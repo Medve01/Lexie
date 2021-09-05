@@ -1,11 +1,17 @@
 DROP TABLE IF EXISTS device;
+DROP TABLE IF EXISTS devicetype;
+
 
 CREATE TABLE device (
     device_id TEXT UNIQUE NOT NULL,
     device_name TEXT NOT NULL,
-    device_type TEXT NOT NULL
+    device_type INT NOT NULL
 );
--- lower(hex(randomblob(16))) 
+
+CREATE TABLE devicetype (
+    devicetype_name TEXT UNIQUE NOT NULL
+);
+
 
 INSERT INTO device (
     device_id,
@@ -14,5 +20,8 @@ INSERT INTO device (
 ) VALUES (
     '1234',
     'Test device',
-    'test devicetype'
+    1
 );
+
+INSERT INTO devicetype (rowid,devicetype_name) VALUES (1, 'Test devicetype');
+INSERT INTO devicetype (rowid,devicetype_name) VALUES (2, 'Shelly1');
