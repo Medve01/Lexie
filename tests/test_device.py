@@ -1,7 +1,7 @@
 import pytest
 from lexie.app import create_app
 from lexie.db import init__db
-from lexie.devices.device import LexieDevice
+from lexie.devices.device import LexieDevice, LexieDeviceType
 
 @pytest.fixture
 def app():
@@ -21,15 +21,19 @@ def test_device_status_existing_device(app):
     with app.app_context():
         device_id='1234'
         testdevice = LexieDevice(device_id)
-    status = testdevice.status()
-    assert status['device_id'] == device_id
-    assert (status['online'] is True) or (status['online'] is False)
-    assert (status['ison'] is True) or (status['ison'] is False)
-    assert status['device_type'] == 'test devicetype'
-    assert status['device_name'] == 'Test device'
+        assert testdevice.device_id == device_id
+        assert testdevice.online is True or testdevice.online is False
+        assert testdevice.ison is True or testdevice.ison is False
+        assert testdevice.device_type.name == 'Test devicetype' # Test devicetype is always 1
+        assert testdevice.device_name == 'Test device'
 
 def test_device_nonexisting_device(app):
     with app.app_context():
         device_id = '12345'
         with pytest.raises(Exception):
             testdevice = LexieDevice(device_id)
+
+def test_device_new(app):
+    with app.app_context():
+        test_device = LexieDevice.new(device_name='Test device', device_type=LexieDeviceType(1))
+        assert test_device.device_name == 'Test device' and test_device.device_type.name == 'Test devicetype' # Test devicetype is always 1
