@@ -9,7 +9,8 @@ CREATE TABLE device (
 );
 
 CREATE TABLE devicetype (
-    devicetype_name TEXT UNIQUE NOT NULL
+    devicetype_name TEXT UNIQUE NOT NULL,
+    devicetype_manufacturer TEXT NOT NULL
 );
 
 
@@ -23,5 +24,5 @@ INSERT INTO device (
     1
 );
 
-INSERT INTO devicetype (rowid,devicetype_name) VALUES (1, 'Test devicetype');
-INSERT INTO devicetype (rowid,devicetype_name) VALUES (2, 'Shelly1');
+INSERT INTO devicetype (rowid,devicetype_name, devicetype_manufacturer) VALUES (1, 'Test devicetype', 'Test');
+INSERT INTO devicetype (rowid,devicetype_name, devicetype_manufacturer) VALUES (2, 'Shelly1', 'Shelly');

@@ -12,19 +12,21 @@ class LexieDeviceType: #pylint: disable=too-few-public-methods
         with app.app_context():
             lexie_db = get_db()
             devicetype = lexie_db.execute(
-                "select devicetype_name from devicetype where rowid=?",
+                "select devicetype_name, devicetype_manufacturer from devicetype where rowid=?",
                 (devicetype_id,)
             ).fetchone()
             if devicetype is None:
                 raise Exception("Invalid device type: %s" % devicetype_id) # pragma: nocover
             self.id = devicetype_id # pylint:disable=invalid-name
             self.name = devicetype['devicetype_name']
+            self.manufacturer = devicetype['devicetype_manufacturer']
 
     def to_dict(self):
         """ returns a dict representaion of the object """
         temp_self = {
             'devicetype_id': self.id,
-            'devicetype_name': self.name
+            'devicetype_name': self.name,
+            'devicetype_manufacturer': self.manufacturer
         }
         return temp_self
 
