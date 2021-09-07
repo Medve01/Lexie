@@ -1,5 +1,6 @@
 """main Lexie app"""
 import json
+import logging
 
 from flask import Flask
 
@@ -16,4 +17,5 @@ def create_app():
 
     app.register_blueprint(api.api_bp)
     db.init_app(app)
+    logging.basicConfig(level=logging.DEBUG)
     return app

@@ -8,6 +8,7 @@ authors = ["Bear <csaba.ferenclaszlo@zapier.com>"]
 python = "^3.9"
 Flask = "^2.0.1"
 shortuuid = "^1.0.1"
+requests = "^2.26.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -19,6 +20,8 @@ mypy = "^0.910"
 tox-poetry = "^0.4.1"
 coverage = "^5.5"
 pytest-cov = "^2.12.1"
+pytest-mock = "^3.6.1"
+requests-mock = "^1.9.3"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
