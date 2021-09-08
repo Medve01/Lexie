@@ -1,3 +1,6 @@
 {
-    "DATABASE": "lexie.db"
+    "DATABASE": "lexie.db",
+    "DEBUG": true,
+    "CACHE_TYPE": "SimpleCache",
+    "CACHE_DEFAULT_TIMEOUT": 120
 }

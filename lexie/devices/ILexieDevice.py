@@ -12,6 +12,5 @@ class ILexieDevice:
         """ turn relay on . implement param: relay no. """
     def relay_action_toggle(self): #pylint: disable=no-self-use # this is an interface...
         """ toggle relay. implement param: relay no. """
-    @property
     def relay_property_get_status(self):
         """  get relay status """

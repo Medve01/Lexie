@@ -23,33 +23,24 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
     def relay_action_set(self, onoff): #pylint: disable=no-self-use
         """ returns a mocked response of HWDevice.relay_action_set """
         if onoff:
-            return {
-                        "has_timer": False,
+            return  {
                         "ison": True,
-                        "source": "http",
-                        "timer_duration": 0,
-                        "timer_remaining": 0,
-                        "timer_started": 0
+                        "online": True,
+                        "lexie_source": "device"
                     }
-        return {
-                    "has_timer": False,
+        return  {
                     "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0
+                    "online": True,
+                    "lexie_source": "device"
                 }
     def relay_action_toggle(self): #pylint: disable=no-self-use
         """ returns a mocked response of HWDevice.relay_action_set """
-        return {
-                    "has_timer": False,
+        return  {
                     "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0
+                    "online": True,
+                    "lexie_source": "device"
                 }
-    
+
     def to_dict(self):
         temp_self = {
             'device_id': self.device_id,
@@ -88,15 +79,29 @@ def test_default_page(client):
 def test_api_get_device(client):
     """" tests /api/device/device_id"""
     res = client.get('/api/device/1234')
-    assert res.data == b'{"device_attributes":{"ip_address":"192.168.100.37"},"device_id":"1234","device_manufacturer":"shelly","device_name":"Test device","device_product":"shelly1","device_type":{"devicetype_id":1,"devicetype_name":"Relay"}}\n' # pylint:disable=line-too-long
+    assert json.loads(res.data) == {
+        "device_attributes":
+            {
+                "ip_address":"192.168.100.37"
+            },
+            "device_id":"1234",
+            "device_manufacturer":"shelly",
+            "device_name":"Test device",
+            "device_product":"shelly1",
+            "device_type":
+                {
+                    "devicetype_id":1,
+                    "devicetype_name":"Relay"
+                }
+        }
 
 @pytest.mark.parametrize(
     ("onoff","results"),
     (
-        ("on", b'{"has_timer":false,"ison":true,"source":"http","timer_duration":0,"timer_remaining":0,"timer_started":0}\n'),
-        ("off", b'{"has_timer":false,"ison":false,"source":"http","timer_duration":0,"timer_remaining":0,"timer_started":0}\n'),
-        ("toggle", b'{"has_timer":false,"ison":false,"source":"http","timer_duration":0,"timer_remaining":0,"timer_started":0}\n'),
-        ("blarghfteh", b'{"Error:":"Invalid command"}\n')
+        ("on", {"ison":True,"online": True, "lexie_source": "device"}),
+        ("off", {"ison":False,"online": True, "lexie_source": "device"}),
+        ("toggle", {"ison":False,"online": True, "lexie_source": "device"}),
+        ("blarghfteh", {"Error:":"Invalid command"})
     )
 )
 def test_api_device_relay_actions(monkeypatch, client, onoff, results): #pylint: disable=redefined-outer-name
@@ -113,31 +118,42 @@ def test_api_device_relay_actions(monkeypatch, client, onoff, results): #pylint:
     monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.relay_action_set', mock_relay_action_set)
     monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.relay_action_toggle', mock_relay_action_toggle)
     res = client.get('/api/device/1234/' + onoff)
-    assert res.data == results
+    assert json.loads(res.data) == results
 
 def test_api_new_device(monkeypatch, client):
     """ tests PUT /api/device """
     def new_lexiedevice(
-        device_name: str,
-        device_type: LexieDeviceType,
-        device_product: str,
-        device_manufacturer: str,
-        device_attributes: Any
+        device_name: str, # pylint: disable=unused-argument
+        device_type: LexieDeviceType, # pylint: disable=unused-argument
+        device_product: str, # pylint: disable=unused-argument
+        device_manufacturer: str, # pylint: disable=unused-argument
+        device_attributes: Any # pylint: disable=unused-argument
     ):
         return MockLexieDevice(device_id='12345')
-    
-    def new_lexiedevice_to_dict():
-        return {
-            "device_name": device_data['device_name'],
-            "device_type": device_data['device_type'],
-            "device_product": device_data['device_product'],
-            "device_manufacturer": device_data['device_manufacturer'],
-            "device_attributes": device_data['device_attributes']
-        }
-    
-    def mock_lexiedevice_init(device_id):
-        return MockLexieDevice(device_id=device_id)
+
+    # def new_lexiedevice_to_dict():
+    #     return {
+    #         "device_name": device_data['device_name'],
+    #         "device_type": device_data['device_type'],
+    #         "device_product": device_data['device_product'],
+    #         "device_manufacturer": device_data['device_manufacturer'],
+    #         "device_attributes": device_data['device_attributes']
+    #     }
+
+    # def mock_lexiedevice_init(device_id):
+    #     return MockLexieDevice(device_id=device_id)
     monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.new', new_lexiedevice)
     # monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.__init__', mock_lexiedevice_init)
     res = client.put('/api/device', data=json.dumps(device_data))
-    assert res.data == b'{"device_attributes":{"ip_address":"127.0.0.1"},"device_id":"12345","device_manufacturer":"shelly","device_product":"shelly1","device_type":{"devicetype_id":1,"devicetype_name":"Relay"}}\n'
+    assert json.loads(res.data) == {
+                                        "device_attributes": {
+                                                                "ip_address":"127.0.0.1"
+                                                            },
+                                        "device_id":"12345",
+                                        "device_manufacturer":"shelly",
+                                        "device_product":"shelly1",
+                                        "device_type": {
+                                                            "devicetype_id":1,
+                                                            "devicetype_name":"Relay"
+                                                        }
+                                    }
