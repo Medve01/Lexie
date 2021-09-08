@@ -9,38 +9,22 @@ class MockHWDevice:
     def relay_action_set(self, onoff):
         if onoff:
             return  {
-                        "has_timer": False,
                         "ison": True,
-                        "source": "http",
-                        "timer_duration": 0,
-                        "timer_remaining": 0,
-                        "timer_started": 0
+                        "online": True
                     }
         return  {
-                    "has_timer": False,
                     "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0
+                    "online": True
                 }
     def relay_action_toggle(self):
         return  {
-                    "has_timer": False,
                     "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0
+                    "online": True
                 }
     def relay_property_get_status(self):
         return  {
-                    "has_timer": False,
                     "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0
+                    "online": True
                 }
 def mock_relay_action_set(self, onoff):
     mockhwdevice = MockHWDevice()
@@ -74,13 +58,11 @@ def test_device_relay_status_existing_device(monkeypatch, app):
         testdevice = LexieDevice(device_id)
         monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.relay_property_get_status', mock_relay_property_get_status)
         assert testdevice.relay_property_get_status(use_cache=False) == {
-                    "has_timer": False,
-                    "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0
+            "ison": False,
+            "online": True,
+            'lexie_source': "device"
         }
+
 
 def test_device_relay_status_existing_device_from_cache(monkeypatch, app):
     with app.app_context():
@@ -89,13 +71,9 @@ def test_device_relay_status_existing_device_from_cache(monkeypatch, app):
         monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.relay_property_get_status', mock_relay_property_get_status)
         status = testdevice.relay_property_get_status() # calling once so LexieDevice stores in cache
         assert testdevice.relay_property_get_status() == { # second time it should come from cache
-                    "has_timer": False,
-                    "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0,
-                    "lexie_source": "cache"
+            "ison": False,
+            "online": True,
+            'lexie_source': "cache"
         }
 
 def test_device_nonexisting_device(app):
@@ -116,47 +94,27 @@ def test_device_new(app):
         (
             "on",
             {
-                "has_timer": False,
                 "ison": True,
-                "source": "http",
-                "timer_duration": 0,
-                "timer_remaining": 0,
-                "timer_started": 0
+                "online": True,
+                "lexie_source": "device"
             }
         ),
         (
             "off",
             {
-                "has_timer": False,
                 "ison": False,
-                "source": "http",
-                "timer_duration": 0,
-                "timer_remaining": 0,
-                "timer_started": 0
+                "online": True,
+                "lexie_source": "device"
             }
         ),
         (
             "toggle",
             {
-                "has_timer": False,
                 "ison": False,
-                "source": "http",
-                "timer_duration": 0,
-                "timer_remaining": 0,
-                "timer_started": 0
+                "online": True,
+                "lexie_source": "device"
             }
         ),
-        # (
-        #     "status",
-        #     {
-        #         "has_timer": False,
-        #         "ison": False,
-        #         "source": "http",
-        #         "timer_duration": 0,
-        #         "timer_remaining": 0,
-        #         "timer_started": 0
-        #     }
-        # )
     ]
 )
 def test_device_relay_actions(monkeypatch,app, onoff, results):
@@ -172,5 +130,3 @@ def test_device_relay_actions(monkeypatch,app, onoff, results):
             assert test_device.relay_action_set(False) == results
         elif onoff == "toggle":
             assert test_device.relay_action_toggle() == results
-        elif onoff == "status":
-            assert test_device.relay_property_get_status == results

@@ -8,6 +8,30 @@ from lexie.devices.ILexieDevice import ILexieDevice
 
 class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
     """ Implements a Shelly 1 device """
+    @staticmethod
+    def response_to_status(response):
+        """ creates the generalized response LexieDevice accepts from Shelly1 status
+        attributes expected
+        "has_timer": False,
+        "ison": False,
+        "source": "http",
+        "timer_duration": 0,
+        "timer_remaining": 0,
+        "timer_started": 0,
+        "lexie_source": "cache" """
+        if not response:
+            return {
+                'ison': None,
+                'online': False
+            }
+        status = json.loads(response.text)
+        return {
+            'ison': status['ison'],
+            'online': True
+        }
+
+
+
     def __init__(self, device_data):
         """ constructor """
         self.device_data = device_data
@@ -26,29 +50,28 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
             onoff = "off"
         url = "http://" + self.device_ip + "/relay/0?turn=" + onoff
         logging.info('Shelly1 driver: calling url %s', url)
-        response = requests.get(url)
-        if response:
-            return json.loads(response.text)
-        raise Exception('Shelly 1 API call failed!') # pragma: nocover
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            return self.response_to_status(None)
+        return self.response_to_status(response)
 
     def relay_action_toggle(self):
         """ toggle relay. implement param: relay no. """
         url = "http://" + self.device_ip + "/relay/0?turn=toggle"
         logging.info('Shelly1 driver: calling url %s', url)
-        response = requests.get(url)
-        if response:
-            return json.loads(response.text)
-        raise Exception('Shelly 1 API call failed!') # pragma: nocover
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            return self.response_to_status(None)
+        return self.response_to_status(response)
+
     def relay_property_get_status(self):
         """  get relay status """
         url = "http://" + self.device_ip + "/relay/0"
         logging.info('Shelly1 driver: calling url %s', url)
-        response = requests.get(url)
-        if response:
-            return json.loads(response.text)
-        raise Exception('Shelly 1 API call failed!') # pragma: nocover
-
-# will need to implement actions here. Turn on/off, setup, etc.
-# How to handle on/off statuses? store it in memory? Maybe memcached, so it can be read/written?
-# For now I'll go with directly querying the device itself, on every ison get,
-# but this will not be futureproof at all, ever.
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            return self.response_to_status(None)
+        return self.response_to_status(response)

@@ -115,10 +115,14 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
 # Driver methods
     def relay_action_set(self, ison:bool):
         """ turn relay on/off """
-        return self.hw_device.relay_action_set(ison)
+        result = self.hw_device.relay_action_set(ison)
+        result['lexie_source'] = 'device'
+        return result
     def relay_action_toggle(self):
         """ toggle relay. implement param: relay no. """
-        return self.hw_device.relay_action_toggle()
+        result = self.hw_device.relay_action_toggle()
+        result['lexie_source'] = 'device'
+        return result
     def relay_property_get_status(self, use_cache:bool = True): # pylint: disable=arguments-differ
         """  get relay status """
         cache = get_cache()
@@ -132,4 +136,5 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
             device_status_to_cache = device_status.copy()
             device_status_to_cache['lexie_source'] = "cache"
             cache.set(self.device_id + "_status", device_status_to_cache)
+            device_status['lexie_source'] = 'device'
         return device_status

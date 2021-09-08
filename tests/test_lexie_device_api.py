@@ -23,33 +23,24 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
     def relay_action_set(self, onoff): #pylint: disable=no-self-use
         """ returns a mocked response of HWDevice.relay_action_set """
         if onoff:
-            return {
-                        "has_timer": False,
+            return  {
                         "ison": True,
-                        "source": "http",
-                        "timer_duration": 0,
-                        "timer_remaining": 0,
-                        "timer_started": 0
+                        "online": True,
+                        "lexie_source": "device"
                     }
-        return {
-                    "has_timer": False,
+        return  {
                     "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0
+                    "online": True,
+                    "lexie_source": "device"
                 }
     def relay_action_toggle(self): #pylint: disable=no-self-use
         """ returns a mocked response of HWDevice.relay_action_set """
-        return {
-                    "has_timer": False,
+        return  {
                     "ison": False,
-                    "source": "http",
-                    "timer_duration": 0,
-                    "timer_remaining": 0,
-                    "timer_started": 0
+                    "online": True,
+                    "lexie_source": "device"
                 }
-    
+
     def to_dict(self):
         temp_self = {
             'device_id': self.device_id,
@@ -107,9 +98,9 @@ def test_api_get_device(client):
 @pytest.mark.parametrize(
     ("onoff","results"),
     (
-        ("on", {"has_timer":False,"ison":True,"source":"http","timer_duration":0,"timer_remaining":0,"timer_started":0}),
-        ("off", {"has_timer":False,"ison":False,"source":"http","timer_duration":0,"timer_remaining":0,"timer_started":0}),
-        ("toggle", {"has_timer":False,"ison":False,"source":"http","timer_duration":0,"timer_remaining":0,"timer_started":0}),
+        ("on", {"ison":True,"online": True, "lexie_source": "device"}),
+        ("off", {"ison":False,"online": True, "lexie_source": "device"}),
+        ("toggle", {"ison":False,"online": True, "lexie_source": "device"}),
         ("blarghfteh", {"Error:":"Invalid command"})
     )
 )
