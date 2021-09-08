@@ -9,6 +9,7 @@ python = "^3.9"
 Flask = "^2.0.1"
 shortuuid = "^1.0.1"
 requests = "^2.26.0"
+Flask-Caching = "^1.10.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

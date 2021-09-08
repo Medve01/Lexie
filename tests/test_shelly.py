@@ -96,7 +96,7 @@ def test_shelly1_get_status(monkeypatch):
         return MockResponse(url)
     monkeypatch.setattr(requests, 'get', mock_get)
     testdevice = HWDevice(device_data)
-    assert testdevice.relay_property_get_status == {
+    assert testdevice.relay_property_get_status() == {
                                                     "has_timer": False,
                                                     "ison": False,
                                                     "source": "http",

@@ -1,9 +1,11 @@
 import json
+import logging
 from typing import Any
 
 from flask import current_app as app
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
+from lexie.cache import get_cache
 from lexie.db import get_db
 from lexie.devices.ILexieDevice import ILexieDevice
 
@@ -117,7 +119,17 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
     def relay_action_toggle(self):
         """ toggle relay. implement param: relay no. """
         return self.hw_device.relay_action_toggle()
-    @property
-    def relay_property_get_status(self):
+    def relay_property_get_status(self, use_cache:bool = True): # pylint: disable=arguments-differ
         """  get relay status """
-        return self.hw_device.relay_property_get_status()
+        cache = get_cache()
+        device_status = None
+        logging.debug('Fetching device status from cache (%s)', self.device_id)
+        if use_cache:
+            device_status = cache.get(self.device_id + "_status")
+        if not device_status:
+            logging.debug('Cache miss, fetching device status and storing in cache (%s)', self.device_id)
+            device_status = self.hw_device.relay_property_get_status()
+            device_status_to_cache = device_status.copy()
+            device_status_to_cache['lexie_source'] = "cache"
+            cache.set(self.device_id + "_status", device_status_to_cache)
+        return device_status

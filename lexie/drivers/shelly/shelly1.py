@@ -39,7 +39,6 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
         if response:
             return json.loads(response.text)
         raise Exception('Shelly 1 API call failed!') # pragma: nocover
-    @property
     def relay_property_get_status(self):
         """  get relay status """
         url = "http://" + self.device_ip + "/relay/0"
