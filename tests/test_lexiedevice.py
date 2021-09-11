@@ -1,7 +1,7 @@
 import pytest
-from lexie.app import create_app
+from lexie.lexie_app import create_app
 from lexie.db import init__db
-from lexie.devices.LexieDevice import LexieDevice, LexieDeviceType
+from lexie.devices.LexieDevice import LexieDevice, LexieDeviceType, get_all_devices
 
 class MockHWDevice:
     def __init__(self) -> None:
@@ -38,7 +38,7 @@ def mock_relay_property_get_status(self):
 
 @pytest.fixture
 def app():
-    _app = create_app()
+    _app = create_app(testing=True)
     with _app.app_context():
         init__db()
     return _app
@@ -62,6 +62,7 @@ def test_device_relay_status_existing_device(monkeypatch, app):
             "online": True,
             'lexie_source': "device"
         }
+        assert testdevice.online is True
 
 
 def test_device_relay_status_existing_device_from_cache(monkeypatch, app):
@@ -69,7 +70,7 @@ def test_device_relay_status_existing_device_from_cache(monkeypatch, app):
         device_id='1234'
         testdevice = LexieDevice(device_id)
         monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.relay_property_get_status', mock_relay_property_get_status)
-        status = testdevice.relay_property_get_status() # calling once so LexieDevice stores in cache
+        status = testdevice.relay_property_get_status(use_cache=False) # calling once so LexieDevice stores in cache
         assert testdevice.relay_property_get_status() == { # second time it should come from cache
             "ison": False,
             "online": True,
@@ -130,3 +131,10 @@ def test_device_relay_actions(monkeypatch,app, onoff, results):
             assert test_device.relay_action_set(False) == results
         elif onoff == "toggle":
             assert test_device.relay_action_toggle() == results
+
+def test_get_all_devices(app):
+    with app.app_context():
+        test_devices = get_all_devices()
+        assert len(test_devices) == 2
+        for test_device in test_devices:
+            assert isinstance(test_device, LexieDevice)

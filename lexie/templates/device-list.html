@@ -1,0 +1,122 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Tables {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+	<div class="content">
+		<div class="page-inner">
+			<div class="page-header">
+				<h4 class="page-title">Tables</h4>
+				<ul class="breadcrumbs">
+					<li class="nav-home">
+						<a href="#">
+							<i class="fab fa-connectdevelop"></i>
+						</a>
+					</li>
+					<li class="separator">
+						<i class="flaticon-right-arrow"></i>
+					</li>
+					<li class="nav-item">
+						<a href="#">Device List</a>
+					</li>
+				</ul>
+			</div>
+			<div class="row">
+				<div class="col-md-6">
+					<div class="card">
+						<div class="card-body">
+							<div class="card-sub">
+								All devices managed by Lexie Smart Home
+							</div>
+							<div class="table-responsive">
+								<table class="table table-bordered">
+									<thead>
+										<tr>
+											<th>#</th>
+											<th>Name</th>
+											<th>Type</th>
+											<th>Manufacturer</th>
+											<th>Product</th>
+											<th>Online</th>
+										</tr>
+									</thead>
+									<tbody>
+										{% for device in devices %}
+										<tr>
+											<th scope="row">{{ device.device_id }}</th>
+											<td>{{ device.device_name }}</td>
+											<td>{{ device.device_type.name }}</td>
+											<td>{{ device.device_manufacturer }}</td>
+											<td>{{ device.device_product }}</td>
+											<td>{% if device.online %}
+												<!-- <div class="col-md-3"> <div class="demo-icon"> <div class="icon-preview"><i class="fas fa-check-circle"></i></div><div class="icon-class">Online</div> </div> </div> -->
+												<div class="btn btn-success">
+													<span class="btn-label">
+														<i class="fa fa-check"></i>
+													</span>
+													Online
+												</div>
+												{% else %}
+												<!-- <div class="col-md-3"> <div class="demo-icon"> <div class="icon-preview"><i class="fas fa-minus-circle"></i></div><div class="icon-class">Offline</div> </div> </div> -->
+												<div class="btn btn-danger">
+													<span class="btn-label">
+														<i class="fa fa-exclamation-circle"></i>
+													</span>
+													Offline
+												</div>												{% endif %}
+											</td>
+										</tr>
+										{% endfor %}
+									</tbody>
+								</table>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+	<!-- Atlantis DEMO methods, don't include it in your project! -->
+	<script src="/static/assets/js/setting-demo2.js"></script>
+	<script>
+		$('#displayNotif').on('click', function(){
+			var placementFrom = $('#notify_placement_from option:selected').val();
+			var placementAlign = $('#notify_placement_align option:selected').val();
+			var state = $('#notify_state option:selected').val();
+			var style = $('#notify_style option:selected').val();
+			var content = {};
+
+			content.message = 'Turning standard Bootstrap alerts into "notify" like notifications';
+			content.title = 'Bootstrap notify';
+			if (style == "withicon") {
+				content.icon = 'fa fa-bell';
+			} else {
+				content.icon = 'none';
+			}
+			content.url = 'index.html';
+			content.target = '_blank';
+
+			$.notify(content,{
+				type: state,
+				placement: {
+					from: placementFrom,
+					align: placementAlign
+				},
+				time: 1000,
+			});
+		});
+	</script>
+	
+{% endblock javascripts %}
