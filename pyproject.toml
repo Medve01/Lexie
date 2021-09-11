@@ -5,7 +5,7 @@ description = ""
 authors = ["Bear <csaba.ferenclaszlo@zapier.com>"]
 
 [tool.poetry.dependencies]
-python = "^3.9"
+python = "^3.7"
 Flask = "^2.0.1"
 shortuuid = "^1.0.1"
 requests = "^2.26.0"

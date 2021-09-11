@@ -1,5 +1,6 @@
 import json
 import logging
+import socket
 
 import requests
 
@@ -30,6 +31,12 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
             'online': True
         }
 
+    def __check_if_online(self):
+        """ checks if a device is online by connecting to port 80 """
+        sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        sock.settimeout(1)                                      #1 Second Timeout
+        result = sock.connect_ex((self.device_ip,80))
+        return result == 0
 
 
     def __init__(self, device_data):
@@ -68,10 +75,12 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
 
     def relay_property_get_status(self):
         """  get relay status """
-        url = "http://" + self.device_ip + "/relay/0"
-        logging.info('Shelly1 driver: calling url %s', url)
-        try:
-            response = requests.get(url)
-        except requests.exceptions.ConnectionError:
-            return self.response_to_status(None)
-        return self.response_to_status(response)
+        if self.__check_if_online():
+            url = "http://" + self.device_ip + "/relay/0"
+            logging.info('Shelly1 driver: calling url %s', url)
+            try:
+                response = requests.get(url)
+            except requests.exceptions.ConnectionError:
+                return self.response_to_status(None)
+            return self.response_to_status(response)
+        return self.response_to_status(None)

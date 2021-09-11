@@ -44,4 +44,26 @@ INSERT INTO device_attributes (
 ) VALUES (
     '1234',
     '{"ip_address": "192.168.100.37"}'
-)
+);
+INSERT INTO device (
+    device_id,
+    device_name,
+    device_type,
+    device_product,
+    device_manufacturer
+) VALUES (
+    '4321',
+    'Test device2',
+    1,
+    'shelly1',
+    'shelly'
+);
+
+
+INSERT INTO device_attributes (
+    device_id,
+    device_attributes
+) VALUES (
+    '4321',
+    '{"ip_address": "192.168.0.50"}'
+);

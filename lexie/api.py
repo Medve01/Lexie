@@ -3,7 +3,8 @@ import json
 from flask import Blueprint, request
 from flask.json import jsonify
 
-from lexie.devices.LexieDevice import LexieDevice, LexieDeviceType
+from lexie.devices.LexieDevice import (LexieDevice, LexieDeviceType,
+                                       get_all_devices)
 
 api_bp = Blueprint('device_api', __name__, url_prefix='/api')
 
@@ -44,3 +45,12 @@ def device_command(device_id: str, command: str):
     elif command == "toggle":
         response = device.relay_action_toggle()
     return jsonify(response)
+
+@api_bp.route('/device', methods=['GET'])
+def device_get_all():
+    """ returns all devices """
+    return_devices = []
+    devices = get_all_devices()
+    for device in devices:
+        return_devices.append(device.to_dict())
+    return jsonify(return_devices)

@@ -1,7 +1,7 @@
 import json
 from typing import Any
 import pytest
-from lexie.app import create_app
+from lexie.lexie_app import create_app
 from lexie.db import init__db
 from lexie.devices.LexieDevice import LexieDeviceType
 from .test_shelly import device_data
@@ -55,7 +55,7 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
 
 @pytest.fixture
 def app():
-    _app = create_app()
+    _app = create_app(testing=True)
     with _app.app_context():
         init__db()
     return _app
@@ -157,3 +157,29 @@ def test_api_new_device(monkeypatch, client):
                                                             "devicetype_name":"Relay"
                                                         }
                                     }
+
+def test_api_get_all_devices(monkeypatch, client):
+    def mock_get_all_devices():
+        all_devices = []
+        all_devices.append(MockLexieDevice('1234'))
+        all_devices.append(MockLexieDevice('4321'))
+        return all_devices
+    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.devices.LexieDevice.get_all_devices', mock_get_all_devices)
+    res = client.get('/api/device')
+    assert json.loads(res.data) == [
+        {'device_attributes': {'ip_address': '127.0.0.1'},
+        'device_id': '1234',
+        'device_manufacturer': 'shelly',
+        'device_name': 'Mock device',
+        'device_product': 'shelly1',
+        'device_type': {'devicetype_id': 1,
+            'devicetype_name': 'Relay'}},
+        {'device_attributes': {'ip_address': '127.0.0.1'},
+        'device_id': '4321',
+        'device_manufacturer': 'shelly',
+        'device_name': 'Mock device',
+        'device_product': 'shelly1',
+        'device_type': {'devicetype_id': 1,
+        'devicetype_name': 'Relay'}},
+    ]

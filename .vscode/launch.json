@@ -17,7 +17,7 @@
             "request": "launch",
             "module": "flask",
             "env": {
-                "FLASK_APP": "lexie/app.py",
+                "FLASK_APP": "lexie/lexie_app.py",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0"
             },

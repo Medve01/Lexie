@@ -1,6 +1,5 @@
 import requests
 import pytest
-from unittest import mock
 
 from lexie.drivers.shelly.shelly1 import HWDevice
 
@@ -110,6 +109,15 @@ def test_shelly1_toggle_unavailable(monkeypatch):
 
 def test_shelly1_get_status(monkeypatch):
     """ tests get status call """
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 0
+    
     class MockResponse(object):
         def __init__(self, url) -> None:
             self.status_code = 200
@@ -117,8 +125,16 @@ def test_shelly1_get_status(monkeypatch):
             self.text = '{"has_timer": false,"ison": false,"source": "http","timer_duration": 0,"timer_remaining": 0,"timer_started": 0}'
     def mock_get(url):
         return MockResponse(url)
+
+    def mock_sock_connect_ex(self, target):
+        return 0
     monkeypatch.setattr(requests, 'get', mock_get)
+    import socket
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
     testdevice = HWDevice(device_data)
+
     assert testdevice.relay_property_get_status() == {
                                                     "ison": False,
                                                     "online": True
@@ -126,6 +142,15 @@ def test_shelly1_get_status(monkeypatch):
 
 def test_shelly1_get_status_no_response(monkeypatch):
     """ tests get status call """
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 0
+
     class MockResponse(object):
         def __init__(self, url) -> None:
             self.status_code = 200
@@ -133,7 +158,31 @@ def test_shelly1_get_status_no_response(monkeypatch):
             self.text = '{"has_timer": false,"ison": false,"source": "http","timer_duration": 0,"timer_remaining": 0,"timer_started": 0}'
     def mock_get(url):
         raise requests.exceptions.ConnectionError
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
     monkeypatch.setattr(requests, 'get', mock_get)
+    testdevice = HWDevice(device_data)
+    assert testdevice.relay_property_get_status() == {
+                                                    "ison": None,
+                                                    "online": False
+                                                }
+
+
+def test_shelly1_get_status_socket_error(monkeypatch):
+    """ tests get status call """
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 1
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
+
     testdevice = HWDevice(device_data)
     assert testdevice.relay_property_get_status() == {
                                                     "ison": None,
