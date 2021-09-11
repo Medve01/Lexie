@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any
+from typing import Any, Dict
 
 from flask import current_app as app
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
@@ -36,7 +36,7 @@ class LexieDeviceType: #pylint: disable=too-few-public-methods
 class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """ A generic device class """
     def __init__(self, device_id: str):
-        self.state: dict[str, Any] = {}
+        self.state: Dict[str, Any] = {}
         with app.app_context():
             self.device_id = device_id
             lexie_db = get_db()
