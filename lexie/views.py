@@ -3,7 +3,7 @@
 import logging
 import os
 
-from flask import Blueprint, render_template, request
+from flask import Blueprint, redirect, render_template, request
 from jinja2 import TemplateNotFound
 
 from lexie.devices.LexieDevice import (LexieDevice, LexieDeviceType,
@@ -18,7 +18,7 @@ def get_segment( path ):
     try:
         segment = path.split('/')[-1]
         if segment == '':
-            segment = 'dashboard'
+            segment = 'dashboard' #pragma: nocover
         return segment
     except: # pylint: disable=bare-except # pragma nocover
         return None # pragma nocover
@@ -69,4 +69,4 @@ def add_device():
         device_product=device_data['device_driver'].split('-')[1].strip(),
         device_attributes={'ip_address': device_data['device_ip']}
     )
-    return render_template( 'add-device.html', segment='add-device')
+    return redirect( '/ui/device-list')

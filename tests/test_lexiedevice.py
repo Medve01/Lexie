@@ -2,10 +2,21 @@ import pytest
 from lexie.lexie_app import create_app
 from lexie.db import init__db
 from lexie.devices.LexieDevice import LexieDevice, LexieDeviceType, get_all_devices
+from pytest_mock.plugin import MockerFixture
 
 class MockHWDevice:
     def __init__(self) -> None:
-        pass
+        self.device_id= '1234'
+        self.device_name= 'Bedroom light'
+        # self.device_type: testtype.to_dict(),
+        self.device_manufacturer= 'shelly'
+        self.device_product= 'shelly1'
+        self.device_attributes= {
+            'ip_address': '192.168.100.37'
+        }
+        self.ison= None
+        self.online= False
+
     def action_turn(self, onoff):
         if onoff:
             return  {
@@ -34,7 +45,7 @@ def mock_action_toggle(self):
     return mockhwdevice.action_toggle()
 def mock_get_status(self):
     mockhwdevice = MockHWDevice()
-    return mockhwdevice.action_toggle()
+    return mockhwdevice.get_status()
 
 @pytest.fixture
 def app():
@@ -43,7 +54,8 @@ def app():
         init__db()
     return _app
 
-def test_device_existing_device(app):
+def test_device_existing_device(monkeypatch, app):
+    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.get_status', mock_get_status)
     with app.app_context():
         device_id = '1234'
         testdevice = LexieDevice(device_id)
@@ -63,8 +75,8 @@ def test_device_existing_device(app):
         'device_attributes': {
             'ip_address': '192.168.100.37'
         },
-        'device_ison': None,
-        'device_online': False
+        'device_ison': False,
+        'device_online': True
     }
 
 def test_device_relay_status_existing_device(monkeypatch, app):
@@ -96,7 +108,7 @@ def test_device_nonexisting_device(app):
     with app.app_context():
         device_id = '12345'
         with pytest.raises(Exception):
-            testdevice = LexieDevice(device_id)
+            LexieDevice(device_id)
 
 def test_device_new(app):
     with app.app_context():
