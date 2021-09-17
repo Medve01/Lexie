@@ -39,11 +39,11 @@ def device_command(device_id: str, command: str):
     if command not in valid_commands:
         response = {"Error:": "Invalid command"}
     if command == "on":
-        response = device.relay_action_set(True)
+        response = device.action_turn(True)
     elif command == "off":
-        response = device.relay_action_set(False)
+        response = device.action_turn(False)
     elif command == "toggle":
-        response = device.relay_action_toggle()
+        response = device.action_toggle()
     return jsonify(response)
 
 @api_bp.route('/device', methods=['GET'])

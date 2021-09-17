@@ -6,7 +6,7 @@ from lexie.devices.LexieDevice import LexieDevice, LexieDeviceType, get_all_devi
 class MockHWDevice:
     def __init__(self) -> None:
         pass
-    def relay_action_set(self, onoff):
+    def action_turn(self, onoff):
         if onoff:
             return  {
                         "ison": True,
@@ -16,25 +16,25 @@ class MockHWDevice:
                     "ison": False,
                     "online": True
                 }
-    def relay_action_toggle(self):
+    def action_toggle(self):
         return  {
                     "ison": False,
                     "online": True
                 }
-    def relay_property_get_status(self):
+    def get_status(self):
         return  {
                     "ison": False,
                     "online": True
                 }
-def mock_relay_action_set(self, onoff):
+def mock_action_turn(self, onoff):
     mockhwdevice = MockHWDevice()
-    return mockhwdevice.relay_action_set(onoff)
-def mock_relay_action_toggle(self):
+    return mockhwdevice.action_turn(onoff)
+def mock_action_toggle(self):
     mockhwdevice = MockHWDevice()
-    return mockhwdevice.relay_action_toggle()
-def mock_relay_property_get_status(self):
+    return mockhwdevice.action_toggle()
+def mock_get_status(self):
     mockhwdevice = MockHWDevice()
-    return mockhwdevice.relay_action_toggle()
+    return mockhwdevice.action_toggle()
 
 @pytest.fixture
 def app():
@@ -47,17 +47,32 @@ def test_device_existing_device(app):
     with app.app_context():
         device_id = '1234'
         testdevice = LexieDevice(device_id)
+        testtype = LexieDeviceType(1)
 
     assert testdevice.device_id == device_id
     assert testdevice.device_type.name == 'Relay' # Test devicetype is always 1
-    assert testdevice.device_name == 'Test device'
+    assert testdevice.device_name == 'Bedroom light'
+    result = testdevice.to_dict()
+    # TODO: MOCK HWDEVICE!!!!!!!
+    assert result == {
+        'device_id': '1234',
+        'device_name': 'Bedroom light',
+        'device_type': testtype.to_dict(),
+        'device_manufacturer': 'shelly',
+        'device_product': 'shelly1',
+        'device_attributes': {
+            'ip_address': '192.168.100.37'
+        },
+        'device_ison': None,
+        'device_online': False
+    }
 
 def test_device_relay_status_existing_device(monkeypatch, app):
     with app.app_context():
         device_id='1234'
         testdevice = LexieDevice(device_id)
-        monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.relay_property_get_status', mock_relay_property_get_status)
-        assert testdevice.relay_property_get_status(use_cache=False) == {
+        monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.get_status', mock_get_status)
+        assert testdevice.get_status(use_cache=False) == {
             "ison": False,
             "online": True,
             'lexie_source': "device"
@@ -69,9 +84,9 @@ def test_device_relay_status_existing_device_from_cache(monkeypatch, app):
     with app.app_context():
         device_id='1234'
         testdevice = LexieDevice(device_id)
-        monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.relay_property_get_status', mock_relay_property_get_status)
-        status = testdevice.relay_property_get_status(use_cache=False) # calling once so LexieDevice stores in cache
-        assert testdevice.relay_property_get_status() == { # second time it should come from cache
+        monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.get_status', mock_get_status)
+        status = testdevice.get_status(use_cache=False) # calling once so LexieDevice stores in cache
+        assert testdevice.get_status() == { # second time it should come from cache
             "ison": False,
             "online": True,
             'lexie_source': "cache"
@@ -119,18 +134,18 @@ def test_device_new(app):
     ]
 )
 def test_device_relay_actions(monkeypatch,app, onoff, results):
-    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.relay_action_set', mock_relay_action_set)
-    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.relay_action_toggle', mock_relay_action_toggle)
-    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.relay_property_get_status', mock_relay_property_get_status)
+    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.action_turn', mock_action_turn)
+    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.action_toggle', mock_action_toggle)
+    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.get_status', mock_get_status)
     with app.app_context():
         test_device = LexieDevice('1234')
-        test_device.relay_action_set(True)
+        test_device.action_turn(True)
         if onoff == "on":
-            assert test_device.relay_action_set(True) == results
+            assert test_device.action_turn(True) == results
         elif onoff == "off":
-            assert test_device.relay_action_set(False) == results
+            assert test_device.action_turn(False) == results
         elif onoff == "toggle":
-            assert test_device.relay_action_toggle() == results
+            assert test_device.action_toggle() == results
 
 def test_get_all_devices(app):
     with app.app_context():

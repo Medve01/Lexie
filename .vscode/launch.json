@@ -16,15 +16,15 @@
             "type": "python",
             "request": "launch",
             "module": "flask",
+            "cwd": "lexie",
             "env": {
-                "FLASK_APP": "lexie/lexie_app.py",
+                "FLASK_APP": "lexie_app.py",
                 "FLASK_ENV": "development",
                 "FLASK_DEBUG": "0"
             },
             "args": [
                 "run",
-                "--no-debugger",
-                "--no-reload"
+                "--no-debugger"
             ],
             "jinja": true
         }

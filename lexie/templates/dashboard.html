@@ -1,0 +1,366 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Dashboard {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}
+<style>
+* {
+    box-shadow: none;
+}
+.power-switch {
+  --color-invert: #ffffff;
+  --width: 50px;
+  --height: 50px;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: var(--width);
+  height: var(--height);
+}
+.power-switch .button {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+}
+.power-switch .button:after {
+  content: "";
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  background: radial-gradient(circle closest-side, var(--color-invert), transparent);
+  filter: blur(20px);
+  opacity: 0;
+  transition: opacity 1s ease, transform 1s ease;
+  transform: perspective(1px) translateZ(0);
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+}
+.power-switch .button .power-on,
+.power-switch .button .power-off {
+  height: 100%;
+  width: 100%;
+  position: absolute;
+  z-index: 1;
+  fill: none;
+  stroke: var(--color-invert);
+  stroke-width: 8px;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.power-switch .button .power-on .line,
+.power-switch .button .power-off .line {
+  opacity: 0.2;
+}
+.power-switch .button .power-on .circle,
+.power-switch .button .power-off .circle {
+  opacity: 0.2;
+  transform: rotate(-58deg);
+  transform-origin: center 27px;
+  stroke-dasharray: 220;
+  stroke-dashoffset: 40;
+}
+.power-switch .button .power-on {
+  filter: drop-shadow(0px 0px 6px rgba(255, 255, 255, 0.8));
+}
+.power-switch .button .power-on .line {
+  opacity: 0;
+  transition: opacity 0.3s ease 1s;
+}
+.power-switch .button .power-on .circle {
+  opacity: 1;
+  stroke-dashoffset: 220;
+  transition: transform 0s ease, stroke-dashoffset 1s ease 0s;
+}
+.power-switch input {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  z-index: 2;
+  cursor: pointer;
+  opacity: 0;
+}
+.power-switch input:checked + .button:after {
+  opacity: 0.15;
+  transform: scale(2) perspective(1px) translateZ(0);
+  -webkit-backface-visibility: hidden;
+          backface-visibility: hidden;
+  transition: opacity 0.5s ease, transform 0.5s ease;
+}
+.power-switch input:checked + .button .power-on,
+.power-switch input:checked + .button .power-off {
+  -webkit-animation: click-animation 0.3s ease forwards;
+          animation: click-animation 0.3s ease forwards;
+  transform: scale(1);
+}
+.power-switch input:checked + .button .power-on .line,
+.power-switch input:checked + .button .power-off .line {
+  -webkit-animation: line-animation 0.8s ease-in forwards;
+          animation: line-animation 0.8s ease-in forwards;
+}
+.power-switch input:checked + .button .power-on .circle,
+.power-switch input:checked + .button .power-off .circle {
+  transform: rotate(302deg);
+}
+.power-switch input:checked + .button .power-on .line {
+  opacity: 1;
+  transition: opacity 0.05s ease-in 0.55s;
+}
+.power-switch input:checked + .button .power-on .circle {
+  transform: rotate(302deg);
+  stroke-dashoffset: 40;
+  transition: transform 0.4s ease 0.2s, stroke-dashoffset 0.4s ease 0.2s;
+}
+
+@-webkit-keyframes line-animation {
+  0% {
+    transform: translateY(0);
+  }
+  10% {
+    transform: translateY(10px);
+  }
+  40% {
+    transform: translateY(-25px);
+  }
+  60% {
+    transform: translateY(-25px);
+  }
+  85% {
+    transform: translateY(10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+
+@keyframes line-animation {
+  0% {
+    transform: translateY(0);
+  }
+  10% {
+    transform: translateY(10px);
+  }
+  40% {
+    transform: translateY(-25px);
+  }
+  60% {
+    transform: translateY(-25px);
+  }
+  85% {
+    transform: translateY(10px);
+  }
+  100% {
+    transform: translateY(0px);
+  }
+}
+@-webkit-keyframes click-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+@keyframes click-animation {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(0.9);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+body {
+	font-size: 20px
+}
+/* body {
+  background: #1b1a23;
+  height: 100vh;
+  font: 400 16px "Poppins", sans-serif;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+} */
+
+
+/* end power button css */
+
+
+/* body {
+    font-family: 'Poppins', sans-serif;
+    margin: 0;
+    width: 100%;
+    height: 100vh;
+    background-color: #d1dad3;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 17px;
+} */
+
+.container {
+    /* max-width: 500px;
+    width: 100%; */
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+.switch-holder {
+    display: flex;
+    padding: 10px 20px;
+    border-radius: 10px;
+    margin-bottom: 30px;
+    /* box-shadow: -8px -8px 15px rgba(0,0,0, .3),
+                10px 10px 10px  rgba(255,255,255,.7),
+                inset 8px 8px 15px rgba(0,0,0, .3),
+                inset 10px 10px 10px rgba(255,255,255,.7); */
+    justify-content: space-between;
+    align-items: center;
+}
+
+.switch-label {
+    width: 150px;
+}
+
+.switch-label i {
+    margin-right: 5px;
+}
+
+.switch-toggle {
+    height: 20px;
+}
+
+.switch-toggle input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    z-index: -2;
+}
+
+.switch-toggle input[type="checkbox"] + label {
+    position: relative;
+    display: inline-block;
+    width: 100px;
+    height: 40px;
+    border-radius: 20px;
+    margin: 0;
+    cursor: pointer;
+    box-shadow: inset -8px -8px 15px rgba(255,255,255,.6),
+                inset 10px 10px 10px rgba(0,0,0, .25);
+    
+}
+
+.switch-toggle input[type="checkbox"] + label::before {
+    position: absolute;
+    content: 'OFF';
+    font-size: 13px;
+    text-align: center;
+    line-height: 25px;
+    top: 8px;
+    left: 8px;
+    width: 45px;
+    height: 25px;
+    border-radius: 20px;
+    background-color: #d1dad3;
+    box-shadow: -3px -3px 5px rgba(255,255,255,.5),
+                3px 3px 5px rgba(0,0,0, .25);
+    transition: .3s ease-in-out;
+}
+
+.switch-toggle input[type="checkbox"]:checked + label::before {
+    left: 50%;
+    content: 'ON';
+    color: #fff;
+    background-color: #00b33c;
+    box-shadow: -3px -3px 5px rgba(255,255,255,.5),
+                3px 3px 5px #00b33c;
+}
+</style>
+{% endblock stylesheets %}
+
+{% block content %}
+			
+	<div class="content">
+		<div class="panel-header bg-primary-gradient">
+			<div class="page-inner py-5">
+				<div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
+					<div>
+						<h2 class="text-white pb-2 fw-bold">Lexie Dashboard</h2>
+						<h5 class="text-white op-7 mb-2">Your rooms and devices</h5>
+					</div>
+
+				</div>
+			</div>
+		</div>
+
+			<div class="row" id="room">
+				<div class="col-md-4">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-title">Living Room</div>
+						</div>
+						<!-- <div class="card-body pb-0" rv-each-device="devices"> -->
+						<div class="card-body pb-0" rv-each-device="devices">
+
+							<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
+									
+									<div class="switch-holder">
+										<div class="switch-label">
+											<span rv-text="device.device_name"></span>
+											<span rv-hide="device.device_online">offline</span>
+										</div>
+										<div class="power-switch">
+											<input type="checkbox" rv-checked="device.device_ison" rv-on-click="controller.toggle_relay" rv-enabled="device.device_online"/>
+											<div class="button">
+											  <svg class="power-off">
+												<use xlink:href="#line" class="line" />
+												<use xlink:href="#circle" class="circle" />
+											  </svg>
+											  <svg class="power-on">
+												<use xlink:href="#line" class="line" />
+												<use xlink:href="#circle" class="circle" />
+											  </svg>
+											</div>
+										  </div>
+										  
+										  <!-- SVG -->
+										  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+											<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" id="line">
+											  <line x1="75" y1="34" x2="75" y2="58"/>
+											</symbol>
+											<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" id="circle">
+											  <circle cx="75" cy="80" r="35"/>
+											</symbol>
+										  </svg>									</div>
+
+							<div class="separator-dashed"></div>
+				
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sightglass@0.2.6/index.min.js"></script>
+<script type="text/javascript"
+src="https://cdn.jsdelivr.net/npm/rivets@0.9.6/dist/rivets.min.js"></script>
+<script type="text/javascript" src="/static/assets/js/lexie/dashboard.js">
+
+</script>
+
+{% endblock javascripts %}
