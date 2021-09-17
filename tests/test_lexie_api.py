@@ -4,10 +4,19 @@ import pytest
 from lexie.lexie_app import create_app
 from lexie.db import init__db
 from lexie.devices.LexieDevice import LexieDeviceType
-from .test_shelly import device_data
-# NAGYON nem fasza egy driver tesztjéből beimportálni a device_data-t, keress jobb helyet!
 
-# from lexie.devices.device import LexieDevice
+
+device_data={
+                "device_id": "123456",
+                "device_name": "Mock device",
+                "device_attributes": {"ip_address": "127.0.0.1"},
+                "device_manufacturer": "shelly",
+                "device_product": "shelly1",
+                "device_type": 1,
+                "device_online": "ONLINE",
+                "device_ison": "ON"
+            }
+
 
 class MockLexieDevice: #pylint: disable=too-few-public-methods
     """ mocks LexieDevice so we can test the http endpoint only """
@@ -19,9 +28,11 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
         self.device_product = device_data['device_product']
         self.device_manufacturer = device_data['device_manufacturer']
         self.device_attributes = device_data['device_attributes']
+        self.device_ison = device_data['device_ison']
+        self.device_online = device_data['device_online']
 
-    def relay_action_set(self, onoff): #pylint: disable=no-self-use
-        """ returns a mocked response of HWDevice.relay_action_set """
+    def action_turn(self, onoff): #pylint: disable=no-self-use
+        """ returns a mocked response of HWDevice.action_turn """
         if onoff:
             return  {
                         "ison": True,
@@ -33,8 +44,8 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
                     "online": True,
                     "lexie_source": "device"
                 }
-    def relay_action_toggle(self): #pylint: disable=no-self-use
-        """ returns a mocked response of HWDevice.relay_action_set """
+    def action_toggle(self): #pylint: disable=no-self-use
+        """ returns a mocked response of HWDevice.action_turn """
         return  {
                     "ison": False,
                     "online": True,
@@ -44,11 +55,13 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
     def to_dict(self):
         temp_self = {
             'device_id': self.device_id,
-            # 'device_name': self.device_name,
+            'device_name': self.device_name,
             'device_type': self.device_type.to_dict(),
             'device_manufacturer': self.device_manufacturer,
             'device_product': self.device_product,
-            'device_attributes': self.device_attributes
+            'device_attributes': self.device_attributes,
+            'device_ison': self.device_ison,
+            'device_online': self.device_online
         }
         return temp_self
 
@@ -66,33 +79,35 @@ def client(app):
     _client = app.test_client()
     return _client
 
-def test_server_up(client):
-    """ tests if server started successfully """
-    res = client.get('/')
-    assert res.status_code == 200
 
-def test_default_page(client):
-    """tests default page"""
-    res = client.get('/')
-    assert b'Nothing to see here - yet.' in res.data
-
-def test_api_get_device(client):
+def test_api_get_device(monkeypatch, client):
     """" tests /api/device/device_id"""
+    def mocklexiedevice_init(Any, device_id):
+        return MockLexieDevice(device_id)
+    
+    def mocklexiedevice_to_dict(Any):
+        mock_device = MockLexieDevice('1234')
+        return mock_device.to_dict()
+    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.to_dict', mocklexiedevice_to_dict)
     res = client.get('/api/device/1234')
+
     assert json.loads(res.data) == {
         "device_attributes":
             {
-                "ip_address":"192.168.100.37"
+                "ip_address":"127.0.0.1"
             },
             "device_id":"1234",
             "device_manufacturer":"shelly",
-            "device_name":"Test device",
+            "device_name":"Mock device",
             "device_product":"shelly1",
             "device_type":
                 {
                     "devicetype_id":1,
                     "devicetype_name":"Relay"
-                }
+                },
+            "device_ison": "ON",
+            "device_online": "ONLINE"
         }
 
 @pytest.mark.parametrize(
@@ -107,16 +122,16 @@ def test_api_get_device(client):
 def test_api_device_relay_actions(monkeypatch, client, onoff, results): #pylint: disable=redefined-outer-name
     """ tests /api/device/1234/on off toggle"""
 
-    def mock_relay_action_set(Any, onoff):
+    def mock_action_turn(Any, onoff):
         mock_device = MockLexieDevice('1234')
-        return mock_device.relay_action_set(onoff)
-    def mock_relay_action_toggle(Any):
+        return mock_device.action_turn(onoff)
+    def mock_action_toggle(Any):
         mock_device = MockLexieDevice('1234')
-        return mock_device.relay_action_toggle()
+        return mock_device.action_toggle()
 
 
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.relay_action_set', mock_relay_action_set)
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.relay_action_toggle', mock_relay_action_toggle)
+    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.action_turn', mock_action_turn)
+    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.action_toggle', mock_action_toggle)
     res = client.get('/api/device/1234/' + onoff)
     assert json.loads(res.data) == results
 
@@ -149,6 +164,9 @@ def test_api_new_device(monkeypatch, client):
                                         "device_attributes": {
                                                                 "ip_address":"127.0.0.1"
                                                             },
+                                        "device_name": "Mock device",
+                                        "device_online": "ONLINE",
+                                        "device_ison": "ON",
                                         "device_id":"12345",
                                         "device_manufacturer":"shelly",
                                         "device_product":"shelly1",

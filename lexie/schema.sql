@@ -13,7 +13,8 @@ CREATE TABLE device (
 );
 
 CREATE TABLE devicetype (
-    devicetype_name TEXT UNIQUE NOT NULL
+    devicetype_name TEXT UNIQUE NOT NULL,
+    devicetype_actions TEXT NOT NULL
 );
 
 CREATE TABLE device_attributes (
@@ -21,8 +22,8 @@ CREATE TABLE device_attributes (
     device_attributes TEXT
 );
 
-INSERT INTO devicetype (rowid,devicetype_name) VALUES (1, 'Relay');
-INSERT INTO devicetype (rowid,devicetype_name) VALUES (2, 'Light');
+INSERT INTO devicetype (rowid,devicetype_name, devicetype_actions) VALUES (1, 'Relay', '[{"name": "onoff", "icon": "fa fa-toggle-on"}, {"name": "toggle", "icon": "fas fa-bullseye"}]');
+INSERT INTO devicetype (rowid,devicetype_name, devicetype_actions) VALUES (2, 'Light', '[{"name": "onoff", "icon": "fa fa-toggle-on"}, {"name": "toggle", "icon": "fas fa-bullseye"}]');
 
 INSERT INTO device (
     device_id,
@@ -32,7 +33,7 @@ INSERT INTO device (
     device_manufacturer
 ) VALUES (
     '1234',
-    'Test device',
+    'Bedroom light',
     1,
     'shelly1',
     'shelly'
@@ -53,7 +54,7 @@ INSERT INTO device (
     device_manufacturer
 ) VALUES (
     '4321',
-    'Test device2',
+    'Office light',
     1,
     'shelly1',
     'shelly'

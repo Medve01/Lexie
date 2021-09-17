@@ -44,45 +44,40 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
         self.device_data = device_data
         if self.device_data['device_manufacturer'] != "shelly" and \
             self.device_data['device_type'] != 1 and \
-            self.device_data['device_product'] != "shelly1":
-            raise Exception('%s is not a Shelly 1 device' % device_data['device_id']) # pragma: nocover
+            self.device_data['device_product'] != "shelly_bulb_rgbw":
+            raise Exception('%s is not a Shelly bulb RGBW device' % device_data['device_id']) # pragma: nocover
         self.device_ip = self.device_data['device_attributes']['ip_address']
         logging.info("Shelly 1 device loaded. IP: %s", self.device_ip)
 
     def action_turn(self, ison:bool):
-        """ turn relay on/off . implement param: relay no. """
+        """ turn light on/off """
         if ison:
             onoff = "on"
         else:
             onoff = "off"
-        url = "http://" + self.device_ip + "/relay/0?turn=" + onoff
-        logging.info('Checking if device is online')
-        if self.__check_if_online():
-            logging.info('Shelly1 driver: calling url %s', url)
-            try:
-                response = requests.get(url)
-            except requests.exceptions.ConnectionError:
-                return self.response_to_status(None)
-            return self.response_to_status(response)
-        return self.response_to_status(None) # TODO: create a test for this case #pylint: disable=fixme #pragma: nocover
+        url = "http://" + self.device_ip + "/light/0?turn=" + onoff
+        logging.info('Shelly Bulb RGBW driver: calling url %s', url)
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            return self.response_to_status(None)
+        return self.response_to_status(response)
 
     def action_toggle(self):
-        """ toggle relay. implement param: relay no. """
-        url = "http://" + self.device_ip + "/relay/0?turn=toggle"
-        logging.info('Shelly1 driver: calling url %s', url)
-        if self.__check_if_online():
-            try:
-                response = requests.get(url)
-            except requests.exceptions.ConnectionError:
-                return self.response_to_status(None)
-            return self.response_to_status(response)
-        return self.response_to_status(None) # TODO: create a test for this case #pylint: disable=fixme #pragma: nocover
+        """ toggle light """
+        url = "http://" + self.device_ip + "/light/0?turn=toggle"
+        logging.info('Shelly Bulb RGBW driver: calling url %s', url)
+        try:
+            response = requests.get(url)
+        except requests.exceptions.ConnectionError:
+            return self.response_to_status(None)
+        return self.response_to_status(response)
 
     def get_status(self):
         """  get relay status """
         if self.__check_if_online():
-            url = "http://" + self.device_ip + "/relay/0"
-            logging.info('Shelly1 driver: calling url %s', url)
+            url = "http://" + self.device_ip + "/light/0"
+            logging.info('Shelly Bulb RGBW driver: calling url %s', url)
             try:
                 response = requests.get(url)
             except requests.exceptions.ConnectionError:
