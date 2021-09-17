@@ -50,10 +50,13 @@ def test_shelly1_turn_onoff(monkeypatch, onoff, results):
                 self.text = '{"Error": "Invalid command"}'
     def mock_get(url):
         return MockResponse(url)
+    def mock_socket_connect_ex(ip, port):
+        return 0
+    monkeypatch.setattr('socket.socket.connect_ex', mock_socket_connect_ex)
     monkeypatch.setattr(requests, 'get', mock_get)
     testdevice = HWDevice(device_data)
 
-    assert testdevice.relay_action_set(onoff) == results
+    assert testdevice.action_turn(onoff) == results
 
 def test_shelly1_turn_onoff_unavailable(monkeypatch):
     """ tests if we can turn a shelly 1 on """
@@ -69,10 +72,13 @@ def test_shelly1_turn_onoff_unavailable(monkeypatch):
                 self.text = '{"Error": "Invalid command"}'
     def mock_get(url):
         raise requests.exceptions.ConnectionError
+    def mock_socket_connect_ex(ip, port):
+        return 0
+    monkeypatch.setattr('socket.socket.connect_ex', mock_socket_connect_ex)
     monkeypatch.setattr(requests, 'get', mock_get)
     testdevice = HWDevice(device_data)
 
-    assert testdevice.relay_action_set(True) == {
+    assert testdevice.action_turn(True) == {
                 "ison": None,
                 "online": False
             }
@@ -86,9 +92,13 @@ def test_shelly1_toggle(monkeypatch):
             self.text = '{"has_timer": false,"ison": false,"source": "http","timer_duration": 0,"timer_remaining": 0,"timer_started": 0}' # pylint: disable=line-too-long
     def mock_get(url):
         return MockResponse(url)
+    def mock_socket_connect_ex(ip, port):
+        return 0
+    monkeypatch.setattr('socket.socket.connect_ex', mock_socket_connect_ex)
     monkeypatch.setattr(requests, 'get', mock_get)
     testdevice = HWDevice(device_data)
-    assert testdevice.relay_action_toggle() == {
+    response = testdevice.action_toggle()
+    assert response == {
                                                     "ison": False,
                                                     "online": True
                                                 }
@@ -100,9 +110,12 @@ def test_shelly1_toggle_unavailable(monkeypatch):
             pass
     def mock_get(url):
         raise requests.exceptions.ConnectionError
+    def mock_socket_connect_ex(ip, port):
+        return 0
+    monkeypatch.setattr('socket.socket.connect_ex', mock_socket_connect_ex)
     monkeypatch.setattr(requests, 'get', mock_get)
     testdevice = HWDevice(device_data)
-    assert testdevice.relay_action_toggle() == {
+    assert testdevice.action_toggle() == {
                                                     "ison": None,
                                                     "online": False
                                                 }
@@ -135,7 +148,7 @@ def test_shelly1_get_status(monkeypatch):
     monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
     testdevice = HWDevice(device_data)
 
-    assert testdevice.relay_property_get_status() == {
+    assert testdevice.get_status() == {
                                                     "ison": False,
                                                     "online": True
                                                 }
@@ -163,7 +176,7 @@ def test_shelly1_get_status_no_response(monkeypatch):
     monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
     monkeypatch.setattr(requests, 'get', mock_get)
     testdevice = HWDevice(device_data)
-    assert testdevice.relay_property_get_status() == {
+    assert testdevice.get_status() == {
                                                     "ison": None,
                                                     "online": False
                                                 }
@@ -184,7 +197,7 @@ def test_shelly1_get_status_socket_error(monkeypatch):
     monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
 
     testdevice = HWDevice(device_data)
-    assert testdevice.relay_property_get_status() == {
+    assert testdevice.get_status() == {
                                                     "ison": None,
                                                     "online": False
                                                 }
