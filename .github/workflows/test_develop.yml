@@ -45,9 +45,7 @@ jobs:
       - name: Code Vulnerability Scan (bandit)
         run: poetry run bandit -r lexie
       - name: Unit tests
-        run: poetry run pytest -vv --cov lexie --cov-report term-missing --cov-report html --html=pytest-report.html --self-contained-html
-      - name: check unit test coverage
-        run: python check_coverage.py 100
+        run: poetry run pytest -vv --cov lexie --cov-report term-missing --cov-report html --html=pytest-report.html --self-contained-html --cov-fail-under 100
 
 
 
