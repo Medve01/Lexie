@@ -34,8 +34,18 @@ jobs:
           poetry-version: ${{ matrix.poetry-version }}
       - name: Install project
         run: poetry install
-      - name: Run tests
-        run: poetry run tox
+      - name: isort
+        run: poetry run isort -c lexie
+      - name: mypy
+        run: poetry run mypy --install-types --non-interactive --ignore-missing-imports lexie/
+      - name: pylint
+        run: poetry run pylint --rcfile ./.pylintrc lexie
+      - name: Unit tests
+        run: poetry run pytest -vv --cov lexie --cov-report term-missing --cov-report html --html=pytest-report.html --self-contained-html
+      - name: bandit
+        run: poetry run bandit -r lexie
+      - name: check unit test coverage
+        run: python check_coverage.py 100
 
 
 
