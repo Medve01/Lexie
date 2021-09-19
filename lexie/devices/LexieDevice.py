@@ -5,7 +5,7 @@ from typing import Any, Dict
 from flask import current_app as app
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
-from lexie.cache import get_cache
+from lexie.caching import get_value_from_cache, set_value_in_cache
 from lexie.db import get_db
 from lexie.devices.ILexieDevice import ILexieDevice
 
@@ -118,17 +118,16 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         return result
     def get_status(self, use_cache:bool = True): # pylint: disable=arguments-differ
         """  get relay status """
-        cache = get_cache()
         device_status = None
         logging.debug('Fetching device status from cache (%s)', self.device_id)
         if use_cache:
-            device_status = cache.get(self.device_id + "_status")
+            device_status = get_value_from_cache(self.device_id + "_status")
         if not device_status:
             logging.debug('Cache miss, fetching device status and storing in cache (%s)', self.device_id + "_status")
             device_status = self.hw_device.get_status()
             device_status_to_cache = device_status.copy()
             device_status_to_cache['lexie_source'] = "cache"
-            cache.set(self.device_id + "_status", device_status_to_cache)
+            set_value_in_cache(self.device_id + "_status", device_status_to_cache)
             device_status['lexie_source'] = 'device'
         self.online = device_status["online"]
         return device_status

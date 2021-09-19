@@ -149,17 +149,6 @@ async = ["asgiref (>=3.2)"]
 dotenv = ["python-dotenv"]
 
 [[package]]
-name = "flask-caching"
-version = "1.10.1"
-description = "Adds caching support to your Flask application"
-category = "main"
-optional = false
-python-versions = ">=3.5"
-
-[package.dependencies]
-Flask = "*"
-
-[[package]]
 name = "gitdb"
 version = "4.0.7"
 description = "Git Object Database"
@@ -371,6 +360,17 @@ platformdirs = ">=2.2.0"
 toml = ">=0.7.1"
 
 [[package]]
+name = "pymemcache"
+version = "3.5.0"
+description = "A comprehensive, fast, pure Python memcached client"
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+six = "*"
+
+[[package]]
 name = "pyparsing"
 version = "2.4.7"
 description = "Python parsing module"
@@ -508,7 +508,7 @@ python-versions = ">=3.5"
 name = "six"
 version = "1.16.0"
 description = "Python 2 and 3 compatibility utilities"
-category = "dev"
+category = "main"
 optional = false
 python-versions = ">=2.7, !=3.0.*, !=3.1.*, !=3.2.*"
 
@@ -670,7 +670,7 @@ testing = ["pytest (>=4.6)", "pytest-checkdocs (>=2.4)", "pytest-flake8", "pytes
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.7"
-content-hash = "55ed7fb1b2fa2b45395ad98b39d1386ce3d509da5aca5ac0c37460df6e106c89"
+content-hash = "dfddc5218e96099038a8585a2e40def2823e8508ec3e9c1b8d3eb43fc476c76d"
 
 [metadata.files]
 astroid = [
@@ -774,10 +774,6 @@ filelock = [
 flask = [
     {file = "Flask-2.0.1-py3-none-any.whl", hash = "sha256:a6209ca15eb63fc9385f38e452704113d679511d9574d09b2cf9183ae7d20dc9"},
     {file = "Flask-2.0.1.tar.gz", hash = "sha256:1c4c257b1892aec1398784c63791cbaa43062f1f7aeb555c4da961b20ee68f55"},
-]
-flask-caching = [
-    {file = "Flask-Caching-1.10.1.tar.gz", hash = "sha256:cf19b722fcebc2ba03e4ae7c55b532ed53f0cbf683ce36fafe5e881789a01c00"},
-    {file = "Flask_Caching-1.10.1-py3-none-any.whl", hash = "sha256:bcda8acbc7508e31e50f63e9b1ab83185b446f6b6318bd9dd1d45626fba2e903"},
 ]
 gitdb = [
     {file = "gitdb-4.0.7-py3-none-any.whl", hash = "sha256:6c4cc71933456991da20917998acbe6cf4fb41eeaab7d6d67fbc05ecd4c865b0"},
@@ -947,6 +943,10 @@ py = [
 pylint = [
     {file = "pylint-2.10.2-py3-none-any.whl", hash = "sha256:e178e96b6ba171f8ef51fbce9ca30931e6acbea4a155074d80cc081596c9e852"},
     {file = "pylint-2.10.2.tar.gz", hash = "sha256:6758cce3ddbab60c52b57dcc07f0c5d779e5daf0cf50f6faacbef1d3ea62d2a1"},
+]
+pymemcache = [
+    {file = "pymemcache-3.5.0-py2.py3-none-any.whl", hash = "sha256:0969cb83db076f54191a39c904217e3db910b1518b0775cf70fa1dcb31a20424"},
+    {file = "pymemcache-3.5.0.tar.gz", hash = "sha256:5bf9c94a6bc9ad081dc9b5808284e027d755a0518f6375a57405552938c74d91"},
 ]
 pyparsing = [
     {file = "pyparsing-2.4.7-py2.py3-none-any.whl", hash = "sha256:ef9d7589ef3c200abe66653d3f1ab1033c3c419ae9b9bdb1240a85b024efc88b"},
