@@ -20,7 +20,7 @@ class LexieDeviceType: #pylint: disable=too-few-public-methods
                 (devicetype_id,)
             ).fetchone()
             if devicetype is None:
-                raise Exception("Invalid device type: %s" % devicetype_id) # pragma: nocover
+                raise Exception(f"Invalid device type: {devicetype_id}") # pragma: nocover
             self.id = devicetype_id # pylint:disable=invalid-name
             self.name = devicetype['devicetype_name']
             self.actions=[]
@@ -47,7 +47,7 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
                 "select * from device, device_attributes where device.device_id = device_attributes.device_id and  device.device_id=?", (device_id,) #pylint: disable=line-too-long
             ).fetchone()
             if device is None:
-                raise Exception('Device %s does not exist in database' % device_id)
+                raise Exception(f'Device {device_id} does not exist in database')
         self.device_type = LexieDeviceType(device['device_type'])
         self.device_name = device['device_name']
         self.device_manufacturer = device['device_manufacturer']
