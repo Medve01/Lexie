@@ -45,7 +45,7 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
         if self.device_data['device_manufacturer'] != "shelly" and \
             self.device_data['device_type'] != 1 and \
             self.device_data['device_product'] != "shelly_bulb_rgbw":
-            raise Exception('%s is not a Shelly bulb RGBW device' % device_data['device_id']) # pragma: nocover
+            raise Exception(f'{device_data["device_id"]} is not a Shelly 1 device') # pragma: nocover
         self.device_ip = self.device_data['device_attributes']['ip_address']
         logging.info("Shelly 1 device loaded. IP: %s", self.device_ip)
 

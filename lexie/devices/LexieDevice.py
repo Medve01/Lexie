@@ -5,7 +5,7 @@ from typing import Any, Dict
 from flask import current_app as app
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
-from lexie.cache import get_cache
+from lexie.caching import get_value_from_cache, set_value_in_cache
 from lexie.db import get_db
 from lexie.devices.ILexieDevice import ILexieDevice
 
@@ -20,7 +20,7 @@ class LexieDeviceType: #pylint: disable=too-few-public-methods
                 (devicetype_id,)
             ).fetchone()
             if devicetype is None:
-                raise Exception("Invalid device type: %s" % devicetype_id) # pragma: nocover
+                raise Exception(f"Invalid device type: {devicetype_id}") # pragma: nocover
             self.id = devicetype_id # pylint:disable=invalid-name
             self.name = devicetype['devicetype_name']
             self.actions=[]
@@ -47,7 +47,7 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
                 "select * from device, device_attributes where device.device_id = device_attributes.device_id and  device.device_id=?", (device_id,) #pylint: disable=line-too-long
             ).fetchone()
             if device is None:
-                raise Exception('Device %s does not exist in database' % device_id)
+                raise Exception(f'Device {device_id} does not exist in database')
         self.device_type = LexieDeviceType(device['device_type'])
         self.device_name = device['device_name']
         self.device_manufacturer = device['device_manufacturer']
@@ -118,17 +118,16 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         return result
     def get_status(self, use_cache:bool = True): # pylint: disable=arguments-differ
         """  get relay status """
-        cache = get_cache()
         device_status = None
         logging.debug('Fetching device status from cache (%s)', self.device_id)
         if use_cache:
-            device_status = cache.get(self.device_id + "_status")
+            device_status = get_value_from_cache(self.device_id + "_status")
         if not device_status:
             logging.debug('Cache miss, fetching device status and storing in cache (%s)', self.device_id + "_status")
             device_status = self.hw_device.get_status()
             device_status_to_cache = device_status.copy()
             device_status_to_cache['lexie_source'] = "cache"
-            cache.set(self.device_id + "_status", device_status_to_cache)
+            set_value_in_cache(self.device_id + "_status", device_status_to_cache)
             device_status['lexie_source'] = 'device'
         self.online = device_status["online"]
         return device_status
