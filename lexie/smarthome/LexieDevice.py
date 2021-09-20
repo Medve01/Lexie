@@ -8,6 +8,7 @@ from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 from lexie.caching import get_value_from_cache, set_value_in_cache
 from lexie.db import get_db
 from lexie.smarthome.ILexieDevice import ILexieDevice
+from lexie.smarthome.Room import Room
 
 
 class LexieDeviceType: #pylint: disable=too-few-public-methods
@@ -59,6 +60,8 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         status = self.get_status()
         self.online = status["online"]
         self.ison = status["ison"]
+        if device['room_id'] is not None:
+            self.room = Room(device['room_id'])
 
     @staticmethod
     def new(
@@ -131,6 +134,15 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
             device_status['lexie_source'] = 'device'
         self.online = device_status["online"]
         return device_status
+
+    def move(self,room:Room) -> None:
+        """ Moves a device from one room to another """
+        with app.app_context():
+            lexie_db = get_db()
+            lexie_db.execute('update device set room_id = ?', (room.id,))
+            lexie_db.commit()
+        self.room = room
+
 
 def get_all_devices():
     """ Fetches all devices from database and returns them in a list as LexieDevice objects """

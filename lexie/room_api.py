@@ -33,5 +33,10 @@ def device_new():
 
 @room_api_bp.route('/<room_id>', methods=['DELETE']) #pragma: nocover
 def room_delete(room_id: str): #pylint: disable=unused-argument #pragma: nocover
-    """ deletes a room """ #pragma: nocover
-    return jsonify('Not yet implemented') #pragma: nocover
+    """ deletes a room """
+    try:
+        room = Room(room_id=room_id)
+    except: #pylint: disable=bare-except
+        return jsonify(f"Room not found with id {room_id}"), 404
+    room.delete()
+    return jsonify(f'Room {room_id} deleted.')
