@@ -5,7 +5,7 @@ from flask import Flask, redirect
 
 from lexie.caching import flush_cache
 
-from . import api, db, events, views
+from . import db, device_api, events, room_api, views
 
 # import logging
 
@@ -22,7 +22,8 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     def index():
         return redirect('/ui')
 
-    app.register_blueprint(api.api_bp)
+    app.register_blueprint(device_api.device_api_bp)
+    app.register_blueprint(room_api.room_api_bp)
     app.register_blueprint(views.ui_bp)
     app.register_blueprint(events.events_bp)
     db.init_app(app)

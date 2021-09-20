@@ -1,8 +1,7 @@
 import pytest
-from lexie.lexie_app import create_app
+from lexie.app import create_app
 from lexie.db import init__db
 from lexie.smarthome.LexieDevice import LexieDevice, LexieDeviceType, get_all_devices
-from pytest_mock.plugin import MockerFixture
 
 class MockHWDevice:
     def __init__(self) -> None:
