@@ -6,7 +6,7 @@ from lexie.db import get_db
 
 class Room:
     """ Represents a room in a smart home """
-    def __init__(self, room_id: int) -> None:
+    def __init__(self, room_id: str) -> None:
         with app.app_context():
             lexie_db = get_db()
             room = lexie_db.execute(
