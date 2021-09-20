@@ -6,7 +6,7 @@ from typing import Any
 from lexie.lexie_app import create_app
 from lexie.db import init__db
 from lexie.views import get_drivers
-from lexie.devices.LexieDevice import LexieDeviceType
+from lexie.smarthome.LexieDevice import LexieDeviceType
 
 @pytest.fixture
 def app():
@@ -73,7 +73,7 @@ def test_add_device_post(monkeypatch, client):
         global passed_arguments_to_mock
         passed_arguments_to_mock = kwargs
         return "666666"
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.new', mock_lexiedevice_new)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.new', mock_lexiedevice_new)
     result = client.post('/ui/add-device', data={
         #         device_name=device_data['device_name'],
         # device_type=LexieDeviceType(device_data['device_type']),

@@ -4,7 +4,7 @@ import socket
 
 import requests
 
-from lexie.devices.ILexieDevice import ILexieDevice
+from lexie.smarthome.ILexieDevice import ILexieDevice
 
 
 class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods

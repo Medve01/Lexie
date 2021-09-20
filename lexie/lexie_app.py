@@ -11,7 +11,7 @@ from . import api, db, events, views
 
 
 
-# from lexie.devices.LexieDevice import get_all_devices
+# from lexie.smarthome.LexieDevice import get_all_devices
 
 def create_app(testing:bool=False):#pylint: disable=unused-argument
     """default app"""
