@@ -1,5 +1,5 @@
 import pytest
-from lexie.lexie_app import create_app
+from lexie.app import create_app
 from lexie.db import init__db
 
 @pytest.fixture

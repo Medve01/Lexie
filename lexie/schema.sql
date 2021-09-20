@@ -1,7 +1,15 @@
 DROP TABLE IF EXISTS device;
 DROP TABLE IF EXISTS devicetype;
 DROP TABLE IF EXISTS device_attributes;
+DROP TABLE IF EXISTS room;
 
+CREATE TABLE room (
+    room_id TEXT UNIQUE NOT NULL,
+    room_name TEXT NOT NULL
+);
+
+INSERT INTO room (room_id, room_name) VALUES ('1234', 'Living room');
+INSERT INTO room (room_id, room_name) VALUES ('1235', 'Bedroom');
 
 
 CREATE TABLE device (

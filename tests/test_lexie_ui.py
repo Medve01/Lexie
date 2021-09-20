@@ -3,7 +3,7 @@ import pytest
 from urllib.parse import urlparse
 from typing import Any
 
-from lexie.lexie_app import create_app
+from lexie.app import create_app
 from lexie.db import init__db
 from lexie.views import get_drivers
 from lexie.smarthome.LexieDevice import LexieDeviceType
