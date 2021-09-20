@@ -39,3 +39,12 @@ def test_get_all_rooms(app):
         rooms = Room.get_all_rooms()
     assert len(rooms) == 2
     assert isinstance(rooms[0], Room) and isinstance(rooms[1], Room)
+
+def test_room_delete(app):
+    with app.app_context():
+        room = Room.new("Test room for delete test")
+        room_id = room.id
+        room = Room(room_id=room_id)
+        room.delete()
+        with pytest.raises(Exception):
+            Room(room_id=room_id)

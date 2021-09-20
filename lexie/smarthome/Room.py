@@ -14,7 +14,7 @@ class Room:
                 (room_id,)
             ).fetchone()
             if room is None:
-                raise Exception(f"Invalid device type: {room_id}") # pragma: nocover
+                raise Exception(f"Invalid room id: {room_id}") # pragma: nocover
             self.id = room_id # pylint:disable=invalid-name
             self.name = room['room_name']
 
@@ -26,6 +26,17 @@ class Room:
             'room_name': self.name,
         }
         return temp_self
+
+    def delete(self) -> None:
+        """" deletes the room from database """
+        try:
+            with app.app_context():
+                lexie_db = get_db()
+                lexie_db.execute('delete from room where room_id = ?', (self.id,))
+                lexie_db.commit()
+        except: #pragma: nocover
+            raise Exception('Error during reem delete from database') #pylint: disable=raise-missing-from #pragma: nocover
+
 
     @staticmethod
     def new(room_name:str):

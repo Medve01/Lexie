@@ -87,3 +87,14 @@ def test_room_api_new_room(monkeypatch, client):
                                         "room_id": "9999",
                                         "room_name": "Mock room",
                                     }
+
+def test_room_api_delete(monkeypatch, client):
+    """ tests DELETE /api/device/6666 """
+    def mock_delete_room(room_id):
+        return
+
+    monkeypatch.setattr('lexie.smarthome.Room.Room.delete', mock_delete_room)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+
+    res = client.delete('/api/room/1234')
+    assert json.loads(res.data) == 'Room 1234 deleted.'
