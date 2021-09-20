@@ -1,3 +1,4 @@
+from lexie.smarthome.Room import Room
 import pytest
 from lexie.app import create_app
 from lexie.db import init__db
@@ -164,3 +165,15 @@ def test_get_all_devices(app):
         assert len(test_devices) == 2
         for test_device in test_devices:
             assert isinstance(test_device, LexieDevice)
+
+def test_device_move(app):
+    with app.app_context():
+        device = LexieDevice('1234')
+        if device.room.id == '1234':
+            target = Room('1235')
+        else:
+            target = Room('1234')
+        device.move(target)
+        device = LexieDevice('1234')
+        assert device.room.id == target.id
+
