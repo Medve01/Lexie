@@ -1,25 +1,12 @@
+from typing import Any
+from urllib.parse import urlparse
+
 import pytest
 
-from urllib.parse import urlparse
-from typing import Any
-
-from lexie.app import create_app
-from lexie.db import init__db
-from lexie.views import get_drivers
 from lexie.smarthome.LexieDevice import LexieDeviceType
+from lexie.views import get_drivers
+from tests.fixtures.test_flask_app import app, client
 
-@pytest.fixture
-def app():
-    _app = create_app(testing=True)
-    with _app.app_context():
-        init__db()
-    return _app
-
-
-@pytest.fixture
-def client(app):
-    _client = app.test_client()
-    return _client
 
 def mock_os_listdir(directory):
     if directory=='./drivers':

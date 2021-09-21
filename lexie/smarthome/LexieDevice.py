@@ -1,12 +1,11 @@
 import json
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
-from flask import current_app as app
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
 from lexie.caching import get_value_from_cache, set_value_in_cache
-from lexie.db import get_db
+from lexie.smarthome import models
 from lexie.smarthome.ILexieDevice import ILexieDevice
 from lexie.smarthome.Room import Room
 
@@ -14,19 +13,27 @@ from lexie.smarthome.Room import Room
 class LexieDeviceType: #pylint: disable=too-few-public-methods
     """ represents LexieDevice types (Shelly1, Shelly DW, etc) from database """
     def __init__(self, devicetype_id: int) -> None:
-        with app.app_context():
-            lexie_db = get_db()
-            devicetype = lexie_db.execute(
-                "select devicetype_name, devicetype_actions from devicetype where rowid=?",
-                (devicetype_id,)
-            ).fetchone()
-            if devicetype is None:
-                raise Exception(f"Invalid device type: {devicetype_id}") # pragma: nocover
-            self.id = devicetype_id # pylint:disable=invalid-name
-            self.name = devicetype['devicetype_name']
-            self.actions=[]
-            for action in json.loads(devicetype['devicetype_actions']):
-                self.actions.append(action)
+        devicetype = models.DeviceType.query.filter_by(id=devicetype_id).first()
+        if devicetype_id is None:
+            raise Exception(f'Invalid device type id: {devicetype_id}') # pragma: nocover
+        self.id = devicetype.id # pylint:disable=invalid-name
+        self.name = devicetype.name
+        self.actions = []
+        for action in json.loads(devicetype.actions):
+            self.actions.append(action)
+        # with app.app_context():
+        #     lexie_db = get_db()
+        #     devicetype = lexie_db.execute(
+        #         "select devicetype_name, devicetype_actions from devicetype where rowid=?",
+        #         (devicetype_id,)
+        #     ).fetchone()
+        #     if devicetype is None:
+        #         raise Exception(f"Invalid device type: {devicetype_id}") # pragma: nocover
+        #     self.id = devicetype_id # pylint:disable=invalid-name
+        #     self.name = devicetype['devicetype_name']
+        #     self.actions=[]
+        #     for action in json.loads(devicetype['devicetype_actions']):
+        #         self.actions.append(action)
 
 
     def to_dict(self):
@@ -41,27 +48,27 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
     """ A generic device class """
     def __init__(self, device_id: str):
         self.state: Dict[str, Any] = {}
-        with app.app_context():
-            self.device_id = device_id
-            lexie_db = get_db()
-            device = lexie_db.execute(
-                "select * from device, device_attributes where device.device_id = device_attributes.device_id and  device.device_id=?", (device_id,) #pylint: disable=line-too-long
-            ).fetchone()
-            if device is None:
-                raise Exception(f'Device {device_id} does not exist in database')
-        self.device_type = LexieDeviceType(device['device_type'])
-        self.device_name = device['device_name']
-        self.device_manufacturer = device['device_manufacturer']
-        self.device_product = device['device_product']
-        self.device_attributes = json.loads(device['device_attributes'])
+        self.device_id = device_id
+        device = models.Device.query.filter_by(id=device_id).first()
+        if device is None:
+            raise Exception(f'Device {device_id} does not exist in database')
+
+        self.device_type = LexieDeviceType(device.device_type)
+        self.device_name = device.name
+        self.device_manufacturer = device.manufacturer
+        self.device_product = device.product
+        self.device_attributes = json.loads(device.attributes)
         driver = __import__('lexie.drivers.' + self.device_manufacturer + '.' + self.device_product,
                              globals(), locals(), ['HWDevice'], 0)
         self.hw_device = driver.HWDevice(self.to_dict())
         status = self.get_status()
         self.online = status["online"]
         self.ison = status["ison"]
-        if device['room_id'] is not None:
-            self.room = Room(device['room_id'])
+        self.room: Optional[Room]=None
+        if device.room_id is not None:
+            self.room = Room(device.room_id)
+        else:
+            self.room = None
 
     @staticmethod
     def new(
@@ -74,23 +81,17 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         """ Static method to store a new device in database.
         device_name and device_type are mandatory """
         device_id = uuid()
-        with app.app_context():
-            lexie_db = get_db()
-            try:
-                lexie_db.execute(
-                    "INSERT INTO device (device_id, device_name, device_type, device_manufacturer, device_product) values (?, ?, ?, ?, ?)",
-                    (device_id, device_name, device_type.id, device_manufacturer, device_product)
-                )
-                lexie_db.commit()
-                lexie_db.execute(
-                    'INSERT INTO device_attributes (device_id, device_attributes) values (?, ?)',
-                    (device_id, json.dumps(device_attributes))
-                )
-                lexie_db.commit()
-            except Exception: # pragma: nocover
-                print('Database error')
-                raise
-            return LexieDevice(device_id = device_id)
+        device = models.Device(
+            id=device_id,
+            name = device_name,
+            device_type = device_type.id,
+            manufacturer = device_manufacturer,
+            product = device_product,
+            attributes = json.dumps(device_attributes)
+        )
+        models.db.session.add(device)
+        models.db.session.commit()
+        return LexieDevice(device_id=device_id)
 
     def to_dict(self):
         """ returns a dict representaion of the object """
@@ -137,21 +138,16 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
 
     def move(self,room:Room) -> None:
         """ Moves a device from one room to another """
-        with app.app_context():
-            lexie_db = get_db()
-            lexie_db.execute('update device set room_id = ?', (room.id,))
-            lexie_db.commit()
+        device = models.db.session.query(models.Device).get(self.device_id)
+        device.room_id = room.id
+        models.db.session.commit()
         self.room = room
 
 
 def get_all_devices():
     """ Fetches all devices from database and returns them in a list as LexieDevice objects """
-    with app.app_context():
-        lexie_db = get_db()
-        device_ids = lexie_db.execute(
-            "select device_id from device"
-        ).fetchall()
-        devices = []
-        for device_id in device_ids:
-            devices.append(LexieDevice(device_id['device_id']))
-        return devices
+    devices = []
+    all_devices = models.Device.query.all()
+    for device in all_devices:
+        devices.append(LexieDevice(device_id = device.id))
+    return devices

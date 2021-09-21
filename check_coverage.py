@@ -1,7 +1,6 @@
 import sys
+
 from bs4 import BeautifulSoup
-
-
 
 coverage_percent:int
 coverage_threshold = int(sys.argv[1])
