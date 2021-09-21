@@ -1,10 +1,10 @@
 import json
 from typing import Any
-import pytest
-from lexie.app import create_app
-from lexie.db import init__db
-from lexie.smarthome.LexieDevice import LexieDeviceType
 
+import pytest
+
+from lexie.smarthome.LexieDevice import LexieDeviceType
+from tests.fixtures.test_flask_app import app, client
 
 device_data={
                 "device_id": "123456",
@@ -66,18 +66,7 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
         return temp_self
 
 
-@pytest.fixture
-def app():
-    _app = create_app(testing=True)
-    with _app.app_context():
-        init__db()
-    return _app
 
-
-@pytest.fixture
-def client(app):
-    _client = app.test_client()
-    return _client
 
 
 def test_api_get_device(monkeypatch, client):

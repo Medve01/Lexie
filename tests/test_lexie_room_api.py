@@ -1,9 +1,10 @@
 import json
 from typing import Any
+
 import pytest
-from lexie.app import create_app
-from lexie.db import init__db
+
 from lexie.smarthome.Room import Room
+from tests.fixtures.test_flask_app import app, client
 
 test_room_data = {
                 "room_id": "1234",
@@ -23,19 +24,6 @@ class MockRoom: #pylint: disable=too-few-public-methods
             'room_name': self.name,
         }
         return temp_self
-
-@pytest.fixture
-def app():
-    _app = create_app(testing=True)
-    with _app.app_context():
-        init__db()
-    return _app
-
-
-@pytest.fixture
-def client(app):
-    _client = app.test_client()
-    return _client
 
 def test_room_api_get_room(monkeypatch, client):
     """" tests /api/room/room_id"""

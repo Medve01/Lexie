@@ -1,8 +1,13 @@
-from lexie.smarthome.Room import Room
+import json
+
 import pytest
-from lexie.app import create_app
-from lexie.db import init__db
-from lexie.smarthome.LexieDevice import LexieDevice, LexieDeviceType, get_all_devices
+
+# from lexie.db import init__db
+from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
+                                         get_all_devices)
+from lexie.smarthome.Room import Room
+from tests.fixtures.test_flask_app import app
+
 
 class MockHWDevice:
     def __init__(self) -> None:
@@ -47,12 +52,6 @@ def mock_get_status(self):
     mockhwdevice = MockHWDevice()
     return mockhwdevice.get_status()
 
-@pytest.fixture
-def app():
-    _app = create_app(testing=True)
-    with _app.app_context():
-        init__db()
-    return _app
 
 def test_device_existing_device(monkeypatch, app):
     monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.get_status', mock_get_status)
@@ -62,18 +61,18 @@ def test_device_existing_device(monkeypatch, app):
         testtype = LexieDeviceType(1)
 
     assert testdevice.device_id == device_id
-    assert testdevice.device_type.name == 'Relay' # Test devicetype is always 1
-    assert testdevice.device_name == 'Bedroom light'
+    assert testdevice.device_type.name == 'Relay'
+    assert testdevice.device_name == 'Test Device'
     result = testdevice.to_dict()
     # TODO: MOCK HWDEVICE!!!!!!!
     assert result == {
         'device_id': '1234',
-        'device_name': 'Bedroom light',
+        'device_name': 'Test Device',
         'device_type': testtype.to_dict(),
         'device_manufacturer': 'shelly',
         'device_product': 'shelly1',
         'device_attributes': {
-            'ip_address': '192.168.100.37'
+            'ip_address': '127.0.0.1'
         },
         'device_ison': False,
         'device_online': True
@@ -169,7 +168,9 @@ def test_get_all_devices(app):
 def test_device_move(app):
     with app.app_context():
         device = LexieDevice('1234')
-        if device.room.id == '1234':
+        if device.room is None:
+            target = Room('1234')
+        elif device.room.id == '1234':
             target = Room('1235')
         else:
             target = Room('1234')

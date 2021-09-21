@@ -1,8 +1,7 @@
-import requests
 import pytest
+import requests
 
 from lexie.drivers.shelly.shelly_bulb_rgbw import HWDevice
-
 
 device_data={
                 "device_id": "123456",
