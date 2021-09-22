@@ -147,6 +147,6 @@ assets/**
 pytest-report.html
 
 # Lexie database
-lexie.db
+*.db
 
 .idea/

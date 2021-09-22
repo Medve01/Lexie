@@ -6,8 +6,8 @@ import os
 from flask import Blueprint, redirect, render_template, request
 from jinja2 import TemplateNotFound
 
-from lexie.devices.LexieDevice import (LexieDevice, LexieDeviceType,
-                                       get_all_devices)
+from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
+                                         get_all_devices)
 
 # Register blueprint
 ui_bp = Blueprint('ui', __name__, url_prefix='/ui')
@@ -26,10 +26,12 @@ def get_segment( path ):
 def get_drivers():
     """ Fetches the available drivers in the drivers folder"""
     drivers=[]
-    elements=os.listdir('./drivers')
+    elements=os.listdir('./lexie/drivers')
+    # if elements is None:
+    #     elements = os.listdir('./drivers')
     for item in elements:
         if item[0]!="_":
-            modules = os.listdir('./drivers/' + item)
+            modules = os.listdir('./lexie/drivers/' + item)
             for module in modules:
                 if module[0] != "_":
                     drivers.append(item + " - " + module[:-3])

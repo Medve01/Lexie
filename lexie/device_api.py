@@ -3,12 +3,12 @@ import json
 from flask import Blueprint, request
 from flask.json import jsonify
 
-from lexie.devices.LexieDevice import (LexieDevice, LexieDeviceType,
-                                       get_all_devices)
+from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
+                                         get_all_devices)
 
-api_bp = Blueprint('device_api', __name__, url_prefix='/api')
+device_api_bp = Blueprint('device_api', __name__, url_prefix='/api/device')
 
-@api_bp.route('/device', methods=["PUT"])
+@device_api_bp.route('/', methods=["PUT"])
 def device_new():
     """ creates a new device in database """
     device_data = json.loads(request.data)
@@ -21,13 +21,13 @@ def device_new():
     )
     return jsonify(device.to_dict())
 
-@api_bp.route('/device/<device_id>', methods=['GET'])
+@device_api_bp.route('/<device_id>', methods=['GET'])
 def device_get(device_id: str):
     """ returns LexieDevice status in"""
     device = LexieDevice(device_id=device_id)
     return jsonify(device.to_dict())
 
-@api_bp.route('/device/<device_id>/<command>', methods=['GET'])
+@device_api_bp.route('/<device_id>/<command>', methods=['GET'])
 def device_command(device_id: str, command: str):
     """ issues a command to the device """
     device = LexieDevice(device_id)
@@ -46,7 +46,7 @@ def device_command(device_id: str, command: str):
         response = device.action_toggle()
     return jsonify(response)
 
-@api_bp.route('/device', methods=['GET'])
+@device_api_bp.route('/', methods=['GET'])
 def device_get_all():
     """ returns all devices """
     return_devices = []

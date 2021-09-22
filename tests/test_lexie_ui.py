@@ -1,39 +1,26 @@
+from typing import Any
+from urllib.parse import urlparse
+
 import pytest
 
-from urllib.parse import urlparse
-from typing import Any
-
-from lexie.lexie_app import create_app
-from lexie.db import init__db
+from lexie.smarthome.LexieDevice import LexieDeviceType
 from lexie.views import get_drivers
-from lexie.devices.LexieDevice import LexieDeviceType
+from tests.fixtures.test_flask_app import app, client
 
-@pytest.fixture
-def app():
-    _app = create_app(testing=True)
-    with _app.app_context():
-        init__db()
-    return _app
-
-
-@pytest.fixture
-def client(app):
-    _client = app.test_client()
-    return _client
 
 def mock_os_listdir(directory):
-    if directory=='./drivers':
+    if directory=='./lexie/drivers':
         return [
             '__init__.py',
             'shelly',
             'xiaomi'
         ]
-    if directory=='./drivers/shelly':
+    if directory=='./lexie/drivers/shelly':
         return [
                 'shelly1.py',
                 'shelly_motion.py'
             ]
-    if directory=='./drivers/xiaomi':
+    if directory=='./lexie/drivers/xiaomi':
         return ['dreamemoppro.py']
 
 def test_default_page(client):
@@ -73,7 +60,7 @@ def test_add_device_post(monkeypatch, client):
         global passed_arguments_to_mock
         passed_arguments_to_mock = kwargs
         return "666666"
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.new', mock_lexiedevice_new)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.new', mock_lexiedevice_new)
     result = client.post('/ui/add-device', data={
         #         device_name=device_data['device_name'],
         # device_type=LexieDeviceType(device_data['device_type']),

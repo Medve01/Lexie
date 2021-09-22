@@ -1,10 +1,10 @@
 import json
 from typing import Any
-import pytest
-from lexie.lexie_app import create_app
-from lexie.db import init__db
-from lexie.devices.LexieDevice import LexieDeviceType
 
+import pytest
+
+from lexie.smarthome.LexieDevice import LexieDeviceType
+from tests.fixtures.test_flask_app import app, client
 
 device_data={
                 "device_id": "123456",
@@ -66,18 +66,7 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
         return temp_self
 
 
-@pytest.fixture
-def app():
-    _app = create_app(testing=True)
-    with _app.app_context():
-        init__db()
-    return _app
 
-
-@pytest.fixture
-def client(app):
-    _client = app.test_client()
-    return _client
 
 
 def test_api_get_device(monkeypatch, client):
@@ -88,8 +77,8 @@ def test_api_get_device(monkeypatch, client):
     def mocklexiedevice_to_dict(Any):
         mock_device = MockLexieDevice('1234')
         return mock_device.to_dict()
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.to_dict', mocklexiedevice_to_dict)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.to_dict', mocklexiedevice_to_dict)
     res = client.get('/api/device/1234')
 
     assert json.loads(res.data) == {
@@ -130,8 +119,8 @@ def test_api_device_relay_actions(monkeypatch, client, onoff, results): #pylint:
         return mock_device.action_toggle()
 
 
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.action_turn', mock_action_turn)
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.action_toggle', mock_action_toggle)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_turn', mock_action_turn)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_action_toggle)
     res = client.get('/api/device/1234/' + onoff)
     assert json.loads(res.data) == results
 
@@ -157,9 +146,9 @@ def test_api_new_device(monkeypatch, client):
 
     # def mock_lexiedevice_init(device_id):
     #     return MockLexieDevice(device_id=device_id)
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.new', new_lexiedevice)
-    # monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.__init__', mock_lexiedevice_init)
-    res = client.put('/api/device', data=json.dumps(device_data))
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.new', new_lexiedevice)
+    # monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mock_lexiedevice_init)
+    res = client.put('/api/device/', data=json.dumps(device_data))
     assert json.loads(res.data) == {
                                         "device_attributes": {
                                                                 "ip_address":"127.0.0.1"
@@ -182,9 +171,9 @@ def test_api_get_all_devices(monkeypatch, client):
         all_devices.append(MockLexieDevice('1234'))
         all_devices.append(MockLexieDevice('4321'))
         return all_devices
-    monkeypatch.setattr('lexie.devices.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.devices.LexieDevice.get_all_devices', mock_get_all_devices)
-    res = client.get('/api/device')
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.get_all_devices', mock_get_all_devices)
+    res = client.get('/api/device/')
     assert json.loads(res.data) == [
         {'device_attributes': {'ip_address': '127.0.0.1'},
         'device_id': '1234',

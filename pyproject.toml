@@ -10,6 +10,8 @@ Flask = "^2.0.1"
 shortuuid = "^1.0.1"
 requests = "^2.26.0"
 pymemcache = "^3.5.0"
+gunicorn = "^20.1.0"
+Flask-SQLAlchemy = "^2.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -24,6 +26,9 @@ pytest-cov = "^2.12.1"
 pytest-mock = "^3.6.1"
 requests-mock = "^1.9.3"
 beautifulsoup4 = "^4.10.0"
+safety = "^1.10.3"
+pylint-flask-sqlalchemy = "^0.2.0"
+sqlalchemy-stubs = "^0.4"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
