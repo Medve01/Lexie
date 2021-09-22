@@ -26,10 +26,10 @@ def get_segment( path ):
 def get_drivers():
     """ Fetches the available drivers in the drivers folder"""
     drivers=[]
-    elements=os.listdir('.lexie/drivers')
+    elements=os.listdir('./lexie/drivers')
     for item in elements:
         if item[0]!="_":
-            modules = os.listdir('.lexie/drivers/' + item)
+            modules = os.listdir('./lexie/drivers/' + item)
             for module in modules:
                 if module[0] != "_":
                     drivers.append(item + " - " + module[:-3])
