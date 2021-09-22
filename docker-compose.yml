@@ -1,0 +1,27 @@
+version: "3.7"
+
+services:
+  lexie:
+    build: ./lexie
+    container_name: lexie
+    restart: always
+    volumes:
+      - dbdata:/data
+    environment:
+      - APP_NAME=Lexie
+    expose:
+      - 8080
+
+  nginx:
+    build: ./nginx
+    restart: always
+    ports:
+      - "80:80"
+  
+  memcached:
+    build: ./memcached
+    restart: always
+    expose:
+      - 11211
+volumes:
+  dbdata:

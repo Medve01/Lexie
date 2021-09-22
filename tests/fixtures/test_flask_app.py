@@ -6,7 +6,10 @@ from lexie.app import create_app
 
 
 @pytest.fixture
-def app():
+def app(monkeypatch):
+    def mock_prepare_db():
+        pass
+    monkeypatch.setattr('lexie.app.prepare_db', mock_prepare_db)
     _app = create_app(testing=True)
     _app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
     import lexie.smarthome.models as models

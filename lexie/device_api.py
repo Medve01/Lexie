@@ -3,8 +3,8 @@ import json
 from flask import Blueprint, request
 from flask.json import jsonify
 
-from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
-                                         get_all_devices)
+from .smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
+                                    get_all_devices)
 
 device_api_bp = Blueprint('device_api', __name__, url_prefix='/api/device')
 

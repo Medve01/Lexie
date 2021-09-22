@@ -6,8 +6,8 @@ import os
 from flask import Blueprint, redirect, render_template, request
 from jinja2 import TemplateNotFound
 
-from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
-                                         get_all_devices)
+from .smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
+                                    get_all_devices)
 
 # Register blueprint
 ui_bp = Blueprint('ui', __name__, url_prefix='/ui')

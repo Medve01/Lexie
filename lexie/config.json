@@ -1,8 +1,8 @@
 {
     "DATABASE": "lexie.db",
     "DEBUG": true,
-    "CACHE_TYPE": "SimpleCache",
-    "CACHE_DEFAULT_TIMEOUT": 120,
-    "SQLALCHEMY_DATABASE_URI": "sqlite:///lexie_orm.db",
-    "SQLALCHEMY_TRACK_MODIFICATIONS": true
+    "SQLALCHEMY_DATABASE_URI": "sqlite:///lexie.db",
+    "SQLALCHEMY_TRACK_MODIFICATIONS": true,
+    "MEMCACHED_HOST": "localhost",
+    "MEMCACHED_PORT": "11211"
 }

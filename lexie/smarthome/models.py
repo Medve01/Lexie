@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import json
 from typing import Any
 
 from flask_sqlalchemy import DefaultMeta, SQLAlchemy
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
@@ -30,3 +32,21 @@ class Device(BaseModel): #pylint: disable=too-few-public-methods # type: ignore
     attributes = db.Column(db.TEXT, nullable=False)
     room_id = db.Column(db.Integer, db.ForeignKey('room.id'), nullable=True)
     room: Any = relationship(Room)
+
+def prepare_db() -> None:
+    """ if database found empty, this creates an empty structure and some system data in it """
+    try: # pragma: nocover
+        db.engine.execute("select * from device_type") # pragma: nocover
+    except OperationalError: # pragma: nocover
+        db.create_all() # pragma: nocover
+        db.session.add(DeviceType( # pragma: nocover
+            id=1,
+            name='Relay',
+            actions=json.dumps([{"name": "onoff", "icon": "fa fa-toggle-on"}, {"name": "toggle", "icon": "fas fa-bullseye"}])
+        ))
+        db.session.add(DeviceType( # pragma: nocover
+            id=2,
+            name='Light',
+            actions=json.dumps([{"name": "onoff", "icon": "fa fa-toggle-on"}, {"name": "toggle", "icon": "fas fa-bullseye"}])
+        ))
+        db.session.commit() # pragma: nocover

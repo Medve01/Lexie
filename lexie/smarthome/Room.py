@@ -1,12 +1,13 @@
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
-from lexie.smarthome import models
+from .models import Room as room_model
+from .models import db
 
 
 class Room:
     """ Represents a room in a smart home """
     def __init__(self, room_id: str) -> None:
-        room = models.Room.query.filter_by(id=room_id).first()
+        room = room_model.query.filter_by(id=room_id).first()
         if room is None:
             raise Exception(f'Room with id {room_id} does not exist')
         self.name = room.name
@@ -22,10 +23,10 @@ class Room:
 
     def delete(self) -> None:
         """" deletes the room from database """
-        room = models.Room.query.filter_by(id=self.id).first()
+        room = room_model.query.filter_by(id=self.id).first()
         try:
-            models.db.session.delete(room)
-            models.db.session.commit()
+            db.session.delete(room)
+            db.session.commit()
         except: #pragma: nocover
             raise Exception('Error during room delete from database') #pylint: disable=raise-missing-from #pragma: nocover
 
@@ -37,10 +38,10 @@ class Room:
         """ Static method to store a new room in database.
         room_name is mandatory """
         room_id = uuid()
-        room = models.Room(id=room_id, name = room_name)
+        room = room_model(id=room_id, name = room_name)
         try:
-            models.db.session.add(room)
-            models.db.session.commit()
+            db.session.add(room)
+            db.session.commit()
         except Exception: # pragma: nocover
             print('Database error')
             raise
@@ -50,7 +51,7 @@ class Room:
     def get_all_rooms():
         """ returns a list(Room) of all rooms in database"""
         rooms = []
-        results = models.Room.query.all()
+        results = room_model.query.all()
         for result in results:
             rooms.append(Room(result.id))
         return rooms

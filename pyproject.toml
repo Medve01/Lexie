@@ -10,6 +10,8 @@ Flask = "^2.0.1"
 shortuuid = "^1.0.1"
 requests = "^2.26.0"
 pymemcache = "^3.5.0"
+uWSGI = "^2.0.19"
+Flask-SQLAlchemy = "^2.5.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

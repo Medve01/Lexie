@@ -4,16 +4,16 @@ from typing import Any, Dict, Optional
 
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
-from lexie.caching import get_value_from_cache, set_value_in_cache
-from lexie.smarthome import models
-from lexie.smarthome.ILexieDevice import ILexieDevice
-from lexie.smarthome.Room import Room
+from .caching import get_value_from_cache, set_value_in_cache
+from .ILexieDevice import ILexieDevice
+from .models import Device, DeviceType, db
+from .Room import Room
 
 
 class LexieDeviceType: #pylint: disable=too-few-public-methods
     """ represents LexieDevice types (Shelly1, Shelly DW, etc) from database """
     def __init__(self, devicetype_id: int) -> None:
-        devicetype = models.DeviceType.query.filter_by(id=devicetype_id).first()
+        devicetype = DeviceType.query.filter_by(id=devicetype_id).first()
         if devicetype_id is None:
             raise Exception(f'Invalid device type id: {devicetype_id}') # pragma: nocover
         self.id = devicetype.id # pylint:disable=invalid-name
@@ -49,7 +49,7 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
     def __init__(self, device_id: str):
         self.state: Dict[str, Any] = {}
         self.device_id = device_id
-        device = models.Device.query.filter_by(id=device_id).first()
+        device = Device.query.filter_by(id=device_id).first()
         if device is None:
             raise Exception(f'Device {device_id} does not exist in database')
 
@@ -81,7 +81,7 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         """ Static method to store a new device in database.
         device_name and device_type are mandatory """
         device_id = uuid()
-        device = models.Device(
+        device = Device(
             id=device_id,
             name = device_name,
             device_type = device_type.id,
@@ -89,8 +89,8 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
             product = device_product,
             attributes = json.dumps(device_attributes)
         )
-        models.db.session.add(device)
-        models.db.session.commit()
+        db.session.add(device)
+        db.session.commit()
         return LexieDevice(device_id=device_id)
 
     def to_dict(self):
@@ -138,16 +138,16 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
 
     def move(self,room:Room) -> None:
         """ Moves a device from one room to another """
-        device = models.db.session.query(models.Device).get(self.device_id)
+        device = db.session.query(Device).get(self.device_id)
         device.room_id = room.id
-        models.db.session.commit()
+        db.session.commit()
         self.room = room
 
 
 def get_all_devices():
     """ Fetches all devices from database and returns them in a list as LexieDevice objects """
     devices = []
-    all_devices = models.Device.query.all()
+    all_devices = Device.query.all()
     for device in all_devices:
         devices.append(LexieDevice(device_id = device.id))
     return devices

@@ -3,7 +3,7 @@ import json
 from flask import Blueprint, request
 from flask.json import jsonify
 
-from lexie.smarthome.Room import Room
+from .smarthome.Room import Room
 
 room_api_bp = Blueprint('room_api', __name__, url_prefix='/api/room')
 
