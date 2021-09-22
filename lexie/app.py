@@ -9,6 +9,7 @@ from lexie.device_api import device_api_bp
 from lexie.events import events_bp
 from lexie.room_api import room_api_bp
 from lexie.smarthome.models import db as sqla_db
+from lexie.smarthome.models import prepare_db
 from lexie.views import ui_bp
 
 
@@ -27,6 +28,7 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     app.register_blueprint(events_bp)
     sqla_db.app = app
     sqla_db.init_app(app)
+    prepare_db()
     # logger = logging.basicConfig(level=logging.DEBUG)
     # logging.getLogger().addHandler(logger)
     # load all device statuses to cache
