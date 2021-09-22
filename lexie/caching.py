@@ -8,7 +8,7 @@ from pymemcache.exceptions import MemcacheError
 
 def get_client() -> base.Client:
     """ returns  pypmemcache.base.client parametrized """
-    client = base.Client(server=('localhost', 11211))
+    client = base.Client(server=('127.0.0.1', 11211))
     return client
 
 def get_value_from_cache(key: str) -> Any:
