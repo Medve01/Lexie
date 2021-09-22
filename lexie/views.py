@@ -27,6 +27,8 @@ def get_drivers():
     """ Fetches the available drivers in the drivers folder"""
     drivers=[]
     elements=os.listdir('./lexie/drivers')
+    # if elements is None:
+    #     elements = os.listdir('./drivers')
     for item in elements:
         if item[0]!="_":
             modules = os.listdir('./lexie/drivers/' + item)

@@ -9,18 +9,18 @@ from tests.fixtures.test_flask_app import app, client
 
 
 def mock_os_listdir(directory):
-    if directory=='./drivers':
+    if directory=='./lexie/drivers':
         return [
             '__init__.py',
             'shelly',
             'xiaomi'
         ]
-    if directory=='./drivers/shelly':
+    if directory=='./lexie/drivers/shelly':
         return [
                 'shelly1.py',
                 'shelly_motion.py'
             ]
-    if directory=='./drivers/xiaomi':
+    if directory=='./lexie/drivers/xiaomi':
         return ['dreamemoppro.py']
 
 def test_default_page(client):
