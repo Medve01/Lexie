@@ -17,6 +17,7 @@ device_data={
                 "device_ison": "ON"
             }
 
+MOCK_CALLED=""
 
 class MockLexieDevice: #pylint: disable=too-few-public-methods
     """ mocks LexieDevice so we can test the http endpoint only """
@@ -190,3 +191,40 @@ def test_api_get_all_devices(monkeypatch, client):
         'device_type': {'devicetype_id': 1,
         'devicetype_name': 'Relay'}},
     ]
+
+def test_api_setup_events(monkeypatch, client):
+    def mock_setup_events(self):
+        global MOCK_CALLED
+        MOCK_CALLED = "mock_setup_events"
+        return True
+    global MOCK_CALLED
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.setup_events', mock_setup_events)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.supports_events', lambda self : True)
+    res = client.get('/api/device/1234/setup-events')
+    assert json.loads(res.data) == {
+        "Result": "Success"
+    }
+    assert res.status_code == 200
+    assert MOCK_CALLED == "mock_setup_events"
+
+def test_api_setup_events_unsupported(monkeypatch, client):
+    @property
+    def mock_supports_events(self):
+        global MOCK_CALLED
+        MOCK_CALLED = "mock_supports_events"
+        return False
+    def mock_setup_events(self):
+        global MOCK_CALLED
+        MOCK_CALLED = "mock_setup_events_unsupported"
+        return True
+    global MOCK_CALLED
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.setup_events', mock_setup_events)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.supports_events', mock_supports_events)
+    res = client.get('/api/device/1234/setup-events')
+    assert json.loads(res.data) == {
+        "Error:": "Invalid command"
+    }
+    assert res.status_code == 200
+    assert MOCK_CALLED != "mock_setup_events_unsupported"

@@ -21,20 +21,6 @@ class LexieDeviceType: #pylint: disable=too-few-public-methods
         self.actions = []
         for action in json.loads(devicetype.actions):
             self.actions.append(action)
-        # with app.app_context():
-        #     lexie_db = get_db()
-        #     devicetype = lexie_db.execute(
-        #         "select devicetype_name, devicetype_actions from devicetype where rowid=?",
-        #         (devicetype_id,)
-        #     ).fetchone()
-        #     if devicetype is None:
-        #         raise Exception(f"Invalid device type: {devicetype_id}") # pragma: nocover
-        #     self.id = devicetype_id # pylint:disable=invalid-name
-        #     self.name = devicetype['devicetype_name']
-        #     self.actions=[]
-        #     for action in json.loads(devicetype['devicetype_actions']):
-        #         self.actions.append(action)
-
 
     def to_dict(self):
         """ returns a dict representaion of the object """
@@ -107,6 +93,8 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
             temp_self['device_ison']= self.ison
         if hasattr(self, 'online'):
             temp_self['device_online'] = self.online
+        if hasattr(self, 'hw_device'):
+            temp_self['supports_events'] = self.hw_device.supports_events
         return temp_self
 
 # Driver methods
@@ -142,6 +130,17 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         device.room_id = room.id
         models.db.session.commit()
         self.room = room
+
+    @property
+    def supports_events(self) -> bool:
+        """ returns supports_events value from driver """
+        return self.hw_device.supports_events
+
+    def setup_events(self) -> bool:
+        """ Calls HWDevice.setup_events() if it's supported """
+        if self.hw_device.supports_events:
+            return self.hw_device.setup_events()
+        return False # pragma: nocover
 
 
 def get_all_devices():

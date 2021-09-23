@@ -75,7 +75,8 @@ def test_device_existing_device(monkeypatch, app):
             'ip_address': '127.0.0.1'
         },
         'device_ison': False,
-        'device_online': True
+        'device_online': True,
+        'supports_events': True
     }
 
 def test_device_relay_status_existing_device(monkeypatch, app):
@@ -178,3 +179,16 @@ def test_device_move(app):
         device = LexieDevice('1234')
         assert device.room.id == target.id
 
+def test_device_supports_events(app):
+    with app.app_context():
+        device = LexieDevice('1234')
+        # 1234 is a shelly device, which does suppport events
+        assert device.supports_events == True
+
+def test_device_setup_events(monkeypatch, app):
+    def mock_hw_device_setup_events(self):
+        return True
+    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.setup_events', mock_hw_device_setup_events)
+    with app.app_context():
+        device = LexieDevice('1234')
+        assert device.setup_events() is True

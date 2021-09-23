@@ -2,6 +2,9 @@ import pytest
 import requests
 
 from lexie.drivers.shelly.shelly_bulb_rgbw import HWDevice
+from tests.fixtures.test_flask_app import app
+
+MOCK_PARAMS = []
 
 device_data={
                 "device_id": "123456",
@@ -187,3 +190,95 @@ def test_shelly_bulb_rgbw_get_status_socket_error(monkeypatch):
                                                     "ison": None,
                                                     "online": False
                                                 }
+
+def test_shelly1_supports_events():
+    """ tests if the driver returns true, it should """
+
+    testdevice = HWDevice(device_data)
+    assert testdevice.supports_events == True
+
+def test_shelly1_setup_events_success(monkeypatch, app):
+    """ Tests event setup """
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 0
+    class MockResponse(object):
+        def __init__(self, url) -> None:
+            self.status_code = 200
+            self.url = url
+            self.text = '{"actions":{"out_on_url":[{"index":0,"urls":["http://127.0.0.1"],"enabled":true}]}}'
+    def mock_get(url):
+        MOCK_PARAMS.append(url)
+        return MockResponse(url)
+    MOCK_PARAMS = []
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
+    monkeypatch.setattr(requests, 'get', mock_get)
+    with app.app_context():
+        testdevice = HWDevice(device_data)
+        assert testdevice.setup_events() == True
+    assert MOCK_PARAMS == [
+        "http://127.0.0.1/settings/actions?index=0&name=out_on_url&enabled=true&urls[]=http://127.0.0.1/events/123456/on",
+        "http://127.0.0.1/settings/actions?index=0&name=out_off_url&enabled=true&urls[]=http://127.0.0.1/events/123456/off",
+    ]
+
+
+def test_shelly1_setup_events_offline(monkeypatch, app):
+    """ Tests event setup """
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 1
+    class MockResponse(object):
+        def __init__(self, url) -> None:
+            self.status_code = 500
+            self.url = url
+            self.text = 'ERROR'
+    def mock_get(url):
+        MOCK_PARAMS.append(url)
+        return MockResponse(url)
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
+    monkeypatch.setattr(requests, 'get', mock_get)
+    with app.app_context():
+        testdevice = HWDevice(device_data)
+        with pytest.raises(Exception):
+            testdevice.setup_events()
+
+def test_shelly1_setup_events_httperror(monkeypatch, app):
+    """ Tests event setup """
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 0
+    class MockResponse(object):
+        def __init__(self, url) -> None:
+            self.status_code = 500
+            self.url = url
+            self.text = 'ERROR'
+    def mock_get(url):
+        MOCK_PARAMS.append(url)
+        return MockResponse(url)
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
+    monkeypatch.setattr(requests, 'get', mock_get)
+    with app.app_context():
+        testdevice = HWDevice(device_data)
+        with pytest.raises(Exception):
+            testdevice.setup_events()
