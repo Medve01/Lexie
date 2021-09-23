@@ -191,13 +191,13 @@ def test_shelly_bulb_rgbw_get_status_socket_error(monkeypatch):
                                                     "online": False
                                                 }
 
-def test_shelly1_supports_events():
+def test_shelly_bulb_rgbw_supports_events():
     """ tests if the driver returns true, it should """
 
     testdevice = HWDevice(device_data)
     assert testdevice.supports_events == True
 
-def test_shelly1_setup_events_success(monkeypatch, app):
+def test_shelly_bulb_rgbw_setup_events_success(monkeypatch, app):
     """ Tests event setup """
     class MockSocket(object):
         def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
@@ -229,7 +229,7 @@ def test_shelly1_setup_events_success(monkeypatch, app):
     ]
 
 
-def test_shelly1_setup_events_offline(monkeypatch, app):
+def test_shelly_bulb_rgbw_setup_events_offline(monkeypatch, app):
     """ Tests event setup """
     class MockSocket(object):
         def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
@@ -256,7 +256,7 @@ def test_shelly1_setup_events_offline(monkeypatch, app):
         with pytest.raises(Exception):
             testdevice.setup_events()
 
-def test_shelly1_setup_events_httperror(monkeypatch, app):
+def test_shelly_bulb_rgbw_setup_events_httperror(monkeypatch, app):
     """ Tests event setup """
     class MockSocket(object):
         def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:

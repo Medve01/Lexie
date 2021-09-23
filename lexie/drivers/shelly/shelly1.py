@@ -101,6 +101,8 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
         if self.__check_if_online():
             shelly_on_url = f"http://{self.device_ip}/settings/actions?index=0&name=out_on_url&enabled=true&urls[]={lexie_url}/events/{self.device_id}/on" # pylint: disable=line-too-long
             shelly_off_url = f"http://{self.device_ip}/settings/actions?index=0&name=out_off_url&enabled=true&urls[]={lexie_url}/events/{self.device_id}/off" # pylint: disable=line-too-long
+            logging.info('Trying to set up action url. Called url: %s', shelly_on_url)
+            logging.info('Trying to set up action url. Called url: %s ', shelly_off_url)
             response_on = requests.get(shelly_on_url)
             response_off = requests.get(shelly_off_url)
             if response_on.status_code > 299 or response_off.status_code > 299:
