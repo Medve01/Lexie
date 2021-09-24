@@ -3,6 +3,7 @@ import requests
 
 from lexie.drivers.shelly.shelly_bulb_rgbw import HWDevice
 from tests.fixtures.test_flask_app import app
+import json
 
 MOCK_PARAMS = []
 
@@ -211,18 +212,49 @@ def test_shelly_bulb_rgbw_setup_events_success(monkeypatch, app):
         def __init__(self, url) -> None:
             self.status_code = 200
             self.url = url
-            self.text = '{"actions":{"out_on_url":[{"index":0,"urls":["http://127.0.0.1"],"enabled":true}]}}'
+            self.text = json.dumps(
+                {
+                    "actions": {
+                        "out_on_url": [
+                        {
+                            "index": 0,
+                            "urls": [
+                            "http://127.0.0.1/events/123456/on"
+                            ],
+                            "enabled": True
+                        }
+                        ],
+                        "out_off_url": [
+                        {
+                            "index": 0,
+                            "urls": [
+                            "http://127.0.0.1/events/123456/off"
+                            ],
+                            "enabled": True
+                        }
+                        ],
+                    }
+                }
+            )
     def mock_get(url):
-        MOCK_PARAMS.append(url)
         return MockResponse(url)
+    class MockHttpResponse(object):
+        def __init__(self,url) -> None:
+            self.status =200
+            self.url = url
+    def mock_urlopen(url):
+        MOCK_PARAMS.append(url)
+        return MockHttpResponse(url)
+
     MOCK_PARAMS = []
     monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
     monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
     monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
     monkeypatch.setattr(requests, 'get', mock_get)
+    monkeypatch.setattr('urllib.request.urlopen', mock_urlopen)
     with app.app_context():
         testdevice = HWDevice(device_data)
-        assert testdevice.setup_events() == True
+        assert testdevice.setup_events() is True
     assert MOCK_PARAMS == [
         "http://127.0.0.1/settings/actions?index=0&name=out_on_url&enabled=true&urls[]=http://127.0.0.1/events/123456/on",
         "http://127.0.0.1/settings/actions?index=0&name=out_off_url&enabled=true&urls[]=http://127.0.0.1/events/123456/off",
@@ -274,10 +306,76 @@ def test_shelly_bulb_rgbw_setup_events_httperror(monkeypatch, app):
     def mock_get(url):
         MOCK_PARAMS.append(url)
         return MockResponse(url)
+    class MockHttpResponse(object):
+        def __init__(self,url) -> None:
+            self.status =500
+            self.url = url
+    def mock_urlopen(url):
+        MOCK_PARAMS.append(url)
+        return MockHttpResponse(url)
     monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
     monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
     monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
     monkeypatch.setattr(requests, 'get', mock_get)
+    monkeypatch.setattr('urllib.request.urlopen', mock_urlopen)
+    with app.app_context():
+        testdevice = HWDevice(device_data)
+        with pytest.raises(Exception):
+            testdevice.setup_events()
+
+def test_shelly_bulb_rgbw_setup_events_verificationerror(monkeypatch, app):
+    """ Tests event setup """
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 0
+    class MockResponse(object):
+        def __init__(self, url) -> None:
+            self.status_code = 200
+            self.url = url
+            self.text = json.dumps(
+                {
+                    "actions": {
+                        "out_on_url": [
+                        {
+                            "index": 0,
+                            "urls": [
+                            "http://127.0.0.1/events/123456/on"
+                            ],
+                            "enabled": False
+                        }
+                        ],
+                        "out_off_url": [
+                        {
+                            "index": 0,
+                            "urls": [
+                            "http://127.0.0.1/events/123456/off"
+                            ],
+                            "enabled": False
+                        }
+                        ],
+                    }
+                }
+            )
+    def mock_get(url):
+        MOCK_PARAMS.append(url)
+        return MockResponse(url)
+    class MockHttpResponse(object):
+        def __init__(self,url) -> None:
+            self.status =200
+            self.url = url
+    def mock_urlopen(url):
+        MOCK_PARAMS.append(url)
+        return MockHttpResponse(url)
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
+    monkeypatch.setattr(requests, 'get', mock_get)
+    monkeypatch.setattr('urllib.request.urlopen', mock_urlopen)
     with app.app_context():
         testdevice = HWDevice(device_data)
         with pytest.raises(Exception):

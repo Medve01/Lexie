@@ -1,6 +1,6 @@
 import json
 
-from flask import Blueprint, request
+from flask import Blueprint, current_app, request
 from flask.json import jsonify
 
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
@@ -47,6 +47,7 @@ def device_command(device_id: str, command: str):
     elif command == "toggle":
         response = device.action_toggle()
     elif command == "setup-events":
+        current_app.logger.debug('Calling LexieDevice.setup_events()')
         device.setup_events()
         response = {"Result": "Success"}
     return jsonify(response)
