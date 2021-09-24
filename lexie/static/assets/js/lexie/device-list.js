@@ -16,7 +16,7 @@ function setupevents(device_id){
         }
     }
     request.onerror = function(){
-        console.log('Network error during events setup');ß
+        console.log('Network error during events setup');
     }
     
     request.send()
