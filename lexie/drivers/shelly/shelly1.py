@@ -1,8 +1,10 @@
 import json
 import logging
 import socket
+import urllib.request
 
 import requests
+from flask import current_app
 
 from lexie.smarthome.ILexieDevice import ILexieDevice
 
@@ -47,6 +49,8 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
             self.device_data['device_product'] != "shelly1":
             raise Exception(f'{device_data["device_id"]} is not a Shelly 1 device') # pragma: nocover
         self.device_ip = self.device_data['device_attributes']['ip_address']
+        self.device_id = device_data["device_id"]
+        self.supports_events = True
         logging.info("Shelly 1 device loaded. IP: %s", self.device_ip)
 
     def action_turn(self, ison:bool):
@@ -89,3 +93,29 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
                 return self.response_to_status(None)
             return self.response_to_status(response)
         return self.response_to_status(None)
+
+    def setup_events(self):
+        """ sets up Shelly device actions (output on/off) to call Lexie event urls
+        returns True if success, False if not
+        This should only ever be called, if supports_events returns True """
+        lexie_url = current_app.config['LEXIE_URL']
+        if self.__check_if_online():
+            shelly_url = f"http://{self.device_ip}/settings/actions"
+            on_params = "index=0&name=out_on_url&enabled=true&urls[]=" + lexie_url + "/events/" + self.device_id + "/on"
+            off_params = "index=0&name=out_off_url&enabled=true&urls[]=" + lexie_url + "/events/" + self.device_id + "/off"
+            # request.get always urlencodes the parameters and Shelly doesn't repond well to that. Therefore using urlopen here.
+            response_on = urllib.request.urlopen(shelly_url + "?" + on_params) # pylint: disable=consider-using-with # nosec # shelly_url is always http, it's hardcoded
+            response_off = urllib.request.urlopen(shelly_url + "?" + off_params) # pylint: disable=consider-using-with # nosec # shelly_url is always http, it's hardcoded
+            if response_on.status > 299 or response_off.status > 299:
+                raise Exception(f'Shelly device {self.device_id} returned an error on HTTP call')
+            # reading back settings for verification
+            result = requests.get(shelly_url)
+            result_obj = json.loads(result.text)
+            if (
+                result_obj["actions"]["out_on_url"][0]["urls"][0] != lexie_url + "/events/" + self.device_id + "/on" or
+                result_obj["actions"]["out_on_url"][0]["index"] != 0 or
+                result_obj["actions"]["out_on_url"][0]["enabled"] is not True
+            ):
+                raise Exception("Unexpected results when verifying Shelly action url setup. There's a bug in the driver, or you need to update it.")
+            return True
+        raise Exception(f'Device {self.device_id} is offline.')

@@ -7,7 +7,7 @@ User=www-data
 Group=www-data
 WorkingDirectory=/opt/lexie/
 
-ExecStart=/usr/local/bin/gunicorn --access-logfile - --workers 3 --bind unix:/opt/lexie/app.sock wsgi:app
+ExecStart=/usr/local/bin/gunicorn --access-logfile - --workers 3 --bind unix:/opt/lexie/app.sock wsgi:app --log-level=debug
 
 [Install]
 WantedBy=multi-user.target
