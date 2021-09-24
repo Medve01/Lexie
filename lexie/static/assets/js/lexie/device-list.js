@@ -8,15 +8,15 @@ function setupevents(device_id){
         if (request.status >= 200 && request.status < 400) {
             // Success!
             // Set items to equal the query results
-            console.log(request.responseText)
+            console.log(request.responseText);
             devices = JSON.parse(request.responseText);
             // put items.item.condition into items.condition
         } else {
-            console.log('HTTP Setting up events')
+            console.log('HTTP Setting up events');
         }
     }
     request.onerror = function(){
-        console.log('Network error during events setup')
+        console.log('Network error during events setup');ß
     }
     
     request.send()
