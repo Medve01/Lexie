@@ -7,10 +7,12 @@ from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices)
 from lexie.smarthome.Room import Room
 from tests.fixtures.test_flask_app import app
+from tests.fixtures.mock_lexieclasses import device_data
 
+MOCK_CALL = {}
 
 class MockHWDevice:
-    def __init__(self) -> None:
+    def __init__(self, device_data) -> None:
         self.device_id= '1234'
         self.device_name= 'Bedroom light'
         # self.device_type: testtype.to_dict(),
@@ -21,6 +23,8 @@ class MockHWDevice:
         }
         self.ison= None
         self.online= False
+        self.device_ip = '192.168.100.37'
+        self.supports_events = True
 
     def action_turn(self, onoff):
         if onoff:
@@ -43,18 +47,22 @@ class MockHWDevice:
                     "online": True
                 }
 def mock_action_turn(self, onoff):
-    mockhwdevice = MockHWDevice()
+    mockhwdevice = MockHWDevice(device_data)
     return mockhwdevice.action_turn(onoff)
 def mock_action_toggle(self):
-    mockhwdevice = MockHWDevice()
+    mockhwdevice = MockHWDevice(device_data)
     return mockhwdevice.action_toggle()
 def mock_get_status(self):
-    mockhwdevice = MockHWDevice()
+    mockhwdevice = MockHWDevice(device_data)
     return mockhwdevice.get_status()
 
 
 def test_device_existing_device(monkeypatch, app):
+    def mock_hw_device_supports_events(self):
+        return True
     monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.get_status', mock_get_status)
+    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.__init__', MockHWDevice.__init__)
+
     with app.app_context():
         device_id = '1234'
         testdevice = LexieDevice(device_id)
@@ -192,3 +200,57 @@ def test_device_setup_events(monkeypatch, app):
     with app.app_context():
         device = LexieDevice('1234')
         assert device.setup_events() is True
+
+@pytest.mark.parametrize(
+    ('cache', 'result'),
+    [
+        (
+            'hit',
+            {
+                'key': '1234_status',
+                'value': {'some': 'value', 'test': 'test_value'}
+            }
+        ),
+        (
+            'miss',
+            {}
+        ),
+    ]
+
+)
+def test_device_set_status(monkeypatch, app, cache, result):
+    def mock_get_value_from_cache(key):
+        if cache == 'hit':
+            return {'some': 'value'}
+        elif cache == 'miss':
+            return None
+        else:
+            raise Exception('screwed up parametrizing')
+
+    
+    def mock_set_value_in_cache(key, value):
+        global MOCK_CALL
+        MOCK_CALL = {
+            'key': key,
+            'value': value
+        }
+        return
+    
+    def mock_get_status(self):
+        return {
+            'online': True,
+            'ison': False
+        }
+
+    global MOCK_CALL
+    MOCK_CALL = {}
+    # monkeypatch.setattr('lexie.caching.get_value_from_cache', mock_get_value_from_cache)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.get_value_from_cache', mock_get_value_from_cache)
+    # monkeypatch.setattr('lexie.caching.set_value_in_cache', mock_set_value_in_cache)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.set_value_in_cache', mock_set_value_in_cache)
+    monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.__init__', MockHWDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.get_status', mock_get_status)
+    with app.app_context():
+        testdevice = LexieDevice(device_id='1234')
+        testdevice.set_status('test', 'test_value')
+    assert MOCK_CALL == result

@@ -142,6 +142,17 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
             return self.hw_device.setup_events()
         return False # pragma: nocover
 
+    def set_status(self, status_name, status_value):
+        """ checks if we have a status stored in cache and updates it with the parameters.
+        If there's a cache miss, gets a full status to store it in cache"""
+        device_status = get_value_from_cache(self.device_id + "_status")
+        if not device_status:
+            # cache miss, get full status
+            self.get_status()
+            return
+        device_status[status_name] = status_value
+        set_value_in_cache(self.device_id + "_status", device_status)
+
 
 def get_all_devices():
     """ Fetches all devices from database and returns them in a list as LexieDevice objects """
