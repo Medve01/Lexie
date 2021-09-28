@@ -31,7 +31,7 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     app.register_blueprint(events_bp)
     sqla_db.app = app
     sqla_db.init_app(app)
-    socketio.init_app(app, cors_allowed_origins='*')
+    socketio.init_app(app, cors_allowed_origins='*', async_mode='eventlet')
     prepare_db()
     # logger = logging.basicConfig(level=logging.DEBUG)
     # logging.getLogger().addHandler(logger)

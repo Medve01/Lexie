@@ -41,7 +41,7 @@ room_view = rivets.bind(
 		controller: controller,
 	}
 )
-var socket = io.connect('http://' + document.domain + ':' + location.port);
+var socket = io.connect('ws://' + document.domain + ':' + location.port, {transports: ['websocket']});
 socket.on('event', function(msg) {
 	console.log('Event received', msg);
 	if (msg['event'] == 'on' || msg['event'] == 'off'){
