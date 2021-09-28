@@ -1,4 +1,5 @@
 [![CodeQL](https://github.com/Medve01/Lexie/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/Medve01/Lexie/actions/workflows/codeql-analysis.yml)   [![CI](https://github.com/Medve01/Lexie/actions/workflows/test_develop.yml/badge.svg)](https://github.com/Medve01/Lexie/actions/workflows/test_develop.yml)
+[![Reviewed by Hound](https://img.shields.io/badge/Reviewed_by-Hound-8E64B0.svg)](https://houndci.com)
 # Lexie
 
 Lexie is supposed to be a framework for controlling smart home devices. Main focus is on LAN-based management and supported devices will start with Shelly devices, namely:

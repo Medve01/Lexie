@@ -48,8 +48,8 @@ jobs:
         run: poetry run pytest -vv --cov lexie --cov-report term-missing --cov-report html --html=pytest-report.html --self-contained-html --cov-fail-under 100
       - name: Poetry export
         run: poetry export -f requirements.txt --output requirements.txt
-      - name: Dependency safety check
-        run: poetry run safety check -r requirements.txt
+      # - name: Dependency safety check
+      #   run: poetry run safety check -r requirements.txt
 
 
 

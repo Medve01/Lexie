@@ -1,11 +1,11 @@
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
 from lexie.caching import get_value_from_cache, set_value_in_cache
-from lexie.smarthome import models
+from lexie.smarthome import exceptions, models
 from lexie.smarthome.ILexieDevice import ILexieDevice
 from lexie.smarthome.Room import Room
 
@@ -15,26 +15,12 @@ class LexieDeviceType: #pylint: disable=too-few-public-methods
     def __init__(self, devicetype_id: int) -> None:
         devicetype = models.DeviceType.query.filter_by(id=devicetype_id).first()
         if devicetype_id is None:
-            raise Exception(f'Invalid device type id: {devicetype_id}') # pragma: nocover
+            raise exceptions.NotFoundException(f'Invalid device type id: {devicetype_id}') # pragma: nocover
         self.id = devicetype.id # pylint:disable=invalid-name
         self.name = devicetype.name
         self.actions = []
         for action in json.loads(devicetype.actions):
             self.actions.append(action)
-        # with app.app_context():
-        #     lexie_db = get_db()
-        #     devicetype = lexie_db.execute(
-        #         "select devicetype_name, devicetype_actions from devicetype where rowid=?",
-        #         (devicetype_id,)
-        #     ).fetchone()
-        #     if devicetype is None:
-        #         raise Exception(f"Invalid device type: {devicetype_id}") # pragma: nocover
-        #     self.id = devicetype_id # pylint:disable=invalid-name
-        #     self.name = devicetype['devicetype_name']
-        #     self.actions=[]
-        #     for action in json.loads(devicetype['devicetype_actions']):
-        #         self.actions.append(action)
-
 
     def to_dict(self):
         """ returns a dict representaion of the object """
@@ -51,7 +37,7 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         self.device_id = device_id
         device = models.Device.query.filter_by(id=device_id).first()
         if device is None:
-            raise Exception(f'Device {device_id} does not exist in database')
+            raise exceptions.NotFoundException(f'Device {device_id} does not exist in database')
 
         self.device_type = LexieDeviceType(device.device_type)
         self.device_name = device.name
@@ -64,11 +50,7 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         status = self.get_status()
         self.online = status["online"]
         self.ison = status["ison"]
-        self.room: Optional[Room]=None
-        if device.room_id is not None:
-            self.room = Room(device.room_id)
-        else:
-            self.room = None
+        self.room = Room(device.room_id)
 
     @staticmethod
     def new(
@@ -107,6 +89,10 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
             temp_self['device_ison']= self.ison
         if hasattr(self, 'online'):
             temp_self['device_online'] = self.online
+        if hasattr(self, 'hw_device'):
+            temp_self['supports_events'] = self.hw_device.supports_events
+        if hasattr(self, 'room'):
+            temp_self['room'] = self.room.to_dict()
         return temp_self
 
 # Driver methods
@@ -143,6 +129,28 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         models.db.session.commit()
         self.room = room
 
+    @property
+    def supports_events(self) -> bool:
+        """ returns supports_events value from driver """
+        return self.hw_device.supports_events
+
+    def setup_events(self) -> bool:
+        """ Calls HWDevice.setup_events() if it's supported """
+        if self.hw_device.supports_events:
+            return self.hw_device.setup_events()
+        return False # pragma: nocover
+
+    def set_status(self, status_name, status_value):
+        """ checks if we have a status stored in cache and updates it with the parameters.
+        If there's a cache miss, gets a full status to store it in cache"""
+        device_status = get_value_from_cache(self.device_id + "_status")
+        if not device_status:
+            # cache miss, get full status
+            self.get_status()
+            return
+        device_status[status_name] = status_value
+        set_value_in_cache(self.device_id + "_status", device_status)
+
 
 def get_all_devices():
     """ Fetches all devices from database and returns them in a list as LexieDevice objects """
@@ -150,4 +158,19 @@ def get_all_devices():
     all_devices = models.Device.query.all()
     for device in all_devices:
         devices.append(LexieDevice(device_id = device.id))
+    return devices
+
+def get_all_devices_with_rooms():
+    """ Fetches all devices grouped by rooms, returns DICT """
+    devices = []
+    rooms = Room.get_all_rooms()
+    for room in rooms:
+        devices_in_room = models.db.session.query(models.Device).filter(models.Device.room_id == room.id)
+        temp2 = []
+        for device in devices_in_room:
+            temp2.append(LexieDevice(device.id).to_dict())
+        devices.append({
+            'room_name': room.name,
+            'room_devices': temp2
+        })
     return devices

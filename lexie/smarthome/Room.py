@@ -1,16 +1,21 @@
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
-from lexie.smarthome import models
+from lexie.smarthome import exceptions, models
 
 
 class Room:
     """ Represents a room in a smart home """
-    def __init__(self, room_id: str) -> None:
-        room = models.Room.query.filter_by(id=room_id).first()
-        if room is None:
-            raise Exception(f'Room with id {room_id} does not exist')
-        self.name = room.name
-        self.id = room.id # pylint: disable=invalid-name
+    def __init__(self, room_id: str = None) -> None:
+        if room_id is None:
+            self.id = None # pylint: disable=invalid-name
+            self.name = 'Unassigned'
+        else:
+            room = models.Room.query.filter_by(id=room_id).first()
+            if room is None:
+                # raise Exception(f'Room with id {room_id} does not exist')
+                raise exceptions.NotFoundException(f'Room ({room_id} does not exist')
+            self.name = room.name
+            self.id = room.id # pylint: disable=invalid-name
 
     def to_dict(self):
         """ returns a dict representaion of the object """
@@ -22,12 +27,13 @@ class Room:
 
     def delete(self) -> None:
         """" deletes the room from database """
-        room = models.Room.query.filter_by(id=self.id).first()
-        try:
-            models.db.session.delete(room)
-            models.db.session.commit()
-        except: #pragma: nocover
-            raise Exception('Error during room delete from database') #pylint: disable=raise-missing-from #pragma: nocover
+        if self.id is not None:
+            room = models.Room.query.filter_by(id=self.id).first()
+            try:
+                models.db.session.delete(room)
+                models.db.session.commit()
+            except: #pragma: nocover
+                raise Exception('Error during room delete from database') #pylint: disable=raise-missing-from #pragma: nocover
 
 
 
@@ -53,4 +59,8 @@ class Room:
         results = models.Room.query.all()
         for result in results:
             rooms.append(Room(result.id))
+        # check if we have devices not assigned to a room
+        results = models.db.session.query(models.Device).filter(models.Device.room_id == None).count() # pylint: disable=singleton-comparison
+        if results > 0:
+            rooms.append(Room())
         return rooms

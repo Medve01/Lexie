@@ -26,7 +26,7 @@
 				</ul>
 			</div>
 			<div class="row">
-				<div class="col-md-6">
+				<div class="col-md-auto">
 					<div class="card">
 						<div class="card-body">
 							<div class="card-sub">
@@ -47,8 +47,8 @@
 									<tbody>
 										{% for device in devices %}
 										<tr>
-											<th scope="row">{{ device.device_id }}</th>
-											<td>{{ device.device_name }}</td>
+											<td>{{ device.device_id }}</td>
+											<th scope="row">{{ device.device_name }}</th>
 											<td>{{ device.device_type.name }}</td>
 											<td>{{ device.device_manufacturer }}</td>
 											<td>{{ device.device_product }}</td>
@@ -58,7 +58,6 @@
 													<span class="btn-label">
 														<i class="fa fa-check"></i>
 													</span>
-													Online
 												</div>
 												{% else %}
 												<!-- <div class="col-md-3"> <div class="demo-icon"> <div class="icon-preview"><i class="fas fa-minus-circle"></i></div><div class="icon-class">Offline</div> </div> </div> -->
@@ -66,8 +65,17 @@
 													<span class="btn-label">
 														<i class="fa fa-exclamation-circle"></i>
 													</span>
-													Offline
-												</div>												{% endif %}
+												</div>
+												{% endif %}
+											</td>
+											<td>
+												{% if device.supports_events %}
+												<div class="btn btn-success" onclick="setupevents('{{ device.device_id }}')"">
+													<span class="btn-label">
+														Setup events
+													</span>
+												</div>
+												{% endif %}
 											</td>
 										</tr>
 										{% endfor %}
@@ -118,5 +126,5 @@
 			});
 		});
 	</script>
-	
+	<script type="text/javascript" src="/static/assets/js/lexie/device-list.js"></script>
 {% endblock javascripts %}

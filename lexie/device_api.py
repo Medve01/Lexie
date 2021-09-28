@@ -1,10 +1,12 @@
 import json
 
-from flask import Blueprint, request
+from flask import Blueprint, current_app, request
 from flask.json import jsonify
 
+from lexie.smarthome import exceptions
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
-                                         get_all_devices)
+                                         get_all_devices,
+                                         get_all_devices_with_rooms)
 
 device_api_bp = Blueprint('device_api', __name__, url_prefix='/api/device')
 
@@ -24,33 +26,48 @@ def device_new():
 @device_api_bp.route('/<device_id>', methods=['GET'])
 def device_get(device_id: str):
     """ returns LexieDevice status in"""
-    device = LexieDevice(device_id=device_id)
-    return jsonify(device.to_dict())
+    try:
+        device = LexieDevice(device_id=device_id)
+        return jsonify(device.to_dict())
+    except exceptions.NotFoundException:
+        return jsonify({'error': f'Device not found with id: {device_id}'}), 404
 
 @device_api_bp.route('/<device_id>/<command>', methods=['GET'])
 def device_command(device_id: str, command: str):
     """ issues a command to the device """
-    device = LexieDevice(device_id)
+    try:
+        device = LexieDevice(device_id)
+    except exceptions.NotFoundException:
+        return jsonify({'error': f'Device not found with id: {device_id}'}), 404
     valid_commands = [
         "on",
         "off",
         "toggle",
     ]
+    if device.supports_events:
+        valid_commands.append("setup-events")
     if command not in valid_commands:
         response = {"Error:": "Invalid command"}
-    if command == "on":
+    elif command == "on":
         response = device.action_turn(True)
     elif command == "off":
         response = device.action_turn(False)
     elif command == "toggle":
         response = device.action_toggle()
+    elif command == "setup-events":
+        current_app.logger.debug('Calling LexieDevice.setup_events()')
+        device.setup_events()
+        response = {"Result": "Success"}
     return jsonify(response)
 
 @device_api_bp.route('/', methods=['GET'])
 def device_get_all():
     """ returns all devices """
-    return_devices = []
-    devices = get_all_devices()
-    for device in devices:
-        return_devices.append(device.to_dict())
-    return jsonify(return_devices)
+    if request.args.get('groupby') == 'rooms':
+        response = get_all_devices_with_rooms()
+    else:
+        response = []
+        devices = get_all_devices()
+        for device in devices:
+            response.append(device.to_dict())
+    return jsonify(response)
