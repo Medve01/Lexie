@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from lexie.smarthome.LexieDevice import LexieDeviceType
+from lexie.smarthome.LexieDevice import LexieDevice, LexieDeviceType
 from tests.fixtures.test_flask_app import app, client
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from tests.fixtures.mock_lexieclasses import device_data
@@ -129,6 +129,43 @@ def test_api_get_all_devices(monkeypatch, client):
         'device_product': 'shelly1',
         'device_type': {'devicetype_id': 1,
         'devicetype_name': 'Relay'}},
+    ]
+
+def test_api_get_all_devices_with_rooms(monkeypatch, client):
+    def mock_get_all_devices_with_rooms():
+        all_devices = [
+            {'room_name': 'Bedroom', 'room_devices':[]},
+            {'room_name': 'Unassigned', 'room_devices':[
+                MockLexieDevice('1234').to_dict(),
+                MockLexieDevice('4321').to_dict(),
+            ]}
+        ]
+        return all_devices
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.get_all_devices', mock_get_all_devices_with_rooms)
+    res = client.get('/api/device/?groupby=rooms')
+    assert json.loads(res.data) == [
+        {'room_devices': [], 'room_name': 'Test room 1'},
+        {'room_devices': [], 'room_name': 'Test room 2'},
+        {'room_devices': [
+            {
+                'device_attributes': {'ip_address': '127.0.0.1'},
+                'device_id': '1234',
+                'device_manufacturer': 'shelly',
+                'device_name': 'Mock device',
+                'device_product': 'shelly1',
+                'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'}
+            },
+            {
+                'device_attributes': {'ip_address': '127.0.0.1'},
+                'device_id': '4321',
+                'device_manufacturer': 'shelly',
+                'device_name': 'Mock device',
+                'device_product': 'shelly1',
+                'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'}
+            }
+        ],
+        'room_name': 'Unassigned'}
     ]
 
 def test_api_setup_events(monkeypatch, client):

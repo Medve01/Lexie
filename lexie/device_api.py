@@ -4,7 +4,8 @@ from flask import Blueprint, current_app, request
 from flask.json import jsonify
 
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
-                                         get_all_devices)
+                                         get_all_devices,
+                                         get_all_devices_with_rooms)
 
 device_api_bp = Blueprint('device_api', __name__, url_prefix='/api/device')
 
@@ -55,8 +56,11 @@ def device_command(device_id: str, command: str):
 @device_api_bp.route('/', methods=['GET'])
 def device_get_all():
     """ returns all devices """
-    return_devices = []
-    devices = get_all_devices()
-    for device in devices:
-        return_devices.append(device.to_dict())
-    return jsonify(return_devices)
+    if request.args.get('groupby') == 'rooms':
+        response = get_all_devices_with_rooms()
+    else:
+        response = []
+        devices = get_all_devices()
+        for device in devices:
+            response.append(device.to_dict())
+    return jsonify(response)

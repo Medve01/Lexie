@@ -23,7 +23,7 @@ def room_get(room_id: str):
     return jsonify(room.to_dict())
 
 @room_api_bp.route('/', methods=["PUT"])
-def device_new():
+def room_new():
     """ creates a new device in database """
     room_data = json.loads(request.data)
     room = Room.new(

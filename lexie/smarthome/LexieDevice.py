@@ -1,6 +1,6 @@
 import json
 import logging
-from typing import Any, Dict, Optional
+from typing import Any, Dict
 
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
@@ -50,11 +50,12 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         status = self.get_status()
         self.online = status["online"]
         self.ison = status["ison"]
-        self.room: Optional[Room]=None
-        if device.room_id is not None:
-            self.room = Room(device.room_id)
-        else:
-            self.room = None
+        self.room = Room(device.room_id)
+        # self.room: Optional[Room]=None
+        # if device.room_id is not None:
+        #     self.room = Room(device.room_id)
+        # else:
+        #     self.room = None
 
     @staticmethod
     def new(
@@ -95,6 +96,8 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
             temp_self['device_online'] = self.online
         if hasattr(self, 'hw_device'):
             temp_self['supports_events'] = self.hw_device.supports_events
+        if hasattr(self, 'room'):
+            temp_self['room'] = self.room.to_dict()
         return temp_self
 
 # Driver methods
@@ -160,4 +163,19 @@ def get_all_devices():
     all_devices = models.Device.query.all()
     for device in all_devices:
         devices.append(LexieDevice(device_id = device.id))
+    return devices
+
+def get_all_devices_with_rooms():
+    """ Fetches all devices grouped by rooms, returns DICT """
+    devices = []
+    rooms = Room.get_all_rooms()
+    for room in rooms:
+        devices_in_room = models.db.session.query(models.Device).filter(models.Device.room_id == room.id)
+        temp2 = []
+        for device in devices_in_room:
+            temp2.append(LexieDevice(device.id).to_dict())
+        devices.append({
+            'room_name': room.name,
+            'room_devices': temp2
+        })
     return devices
