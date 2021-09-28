@@ -4,7 +4,7 @@ import pytest
 
 # from lexie.db import init__db
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
-                                         get_all_devices)
+                                         get_all_devices, get_all_devices_with_rooms)
 from lexie.smarthome.Room import Room
 from tests.fixtures.test_flask_app import app
 from tests.fixtures.mock_lexieclasses import device_data
@@ -84,7 +84,8 @@ def test_device_existing_device(monkeypatch, app):
         },
         'device_ison': False,
         'device_online': True,
-        'supports_events': True
+        'supports_events': True,
+        'room': {'room_id': None, 'room_name': 'Unassigned'}
     }
 
 def test_device_relay_status_existing_device(monkeypatch, app):
@@ -173,6 +174,41 @@ def test_get_all_devices(app):
         assert len(test_devices) == 2
         for test_device in test_devices:
             assert isinstance(test_device, LexieDevice)
+
+
+def test_get_all_devices_with_rooms(app):
+    with app.app_context():
+        test_devices = get_all_devices_with_rooms()
+    assert test_devices == [
+        {'room_name': 'Test room 1', 'room_devices': []},
+        {'room_name': 'Test room 2', 'room_devices': []},
+        {'room_name': 'Unassigned', 'room_devices': [
+            {
+                'device_id': '1234',
+                'device_name': 'Test Device',
+                'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'},
+                'device_manufacturer': 'shelly',
+                'device_product': 'shelly1',
+                'device_attributes': {'ip_address': '127.0.0.1'},
+                'device_ison': None,
+                'device_online': False,
+                'supports_events': True,
+                'room': {'room_id': None, 'room_name': 'Unassigned'}
+            },
+            {
+                'device_id': '4321',
+                'device_name': 'Test Device 2',
+                'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'},
+                'device_manufacturer': 'shelly',
+                'device_product': 'shelly1',
+                'device_attributes': {'ip_address': '127.0.0.2'},
+                'device_ison': None,
+                'device_online': False,
+                'supports_events': True,
+                'room': {'room_id': None, 'room_name': 'Unassigned'}
+            }
+        ]}
+    ]
 
 def test_device_move(app):
     with app.app_context():
