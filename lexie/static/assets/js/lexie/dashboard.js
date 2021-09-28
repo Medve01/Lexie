@@ -13,7 +13,7 @@ function load_devices(){
 		console.log('Network error during fetching devices');
 	}
 
-	request.send()
+	request.send();
 }
 
 controller = {
@@ -43,9 +43,9 @@ room_view = rivets.bind(
 var socket = io.connect('ws://' + document.domain + ':' + location.port, {transports: ['websocket']});
 socket.on('event', function(msg) {
 	console.log('Event received', msg);
-	if (msg['event'] == 'on' || msg['event'] == 'off'){
+	if (msg.event == 'on' || msg.event == 'off'){
 		devices.forEach(function update_device(device, index){
-			if (device['device_id'] == msg['device_id']){
+			if (device.device_id == msg.device_id){
 				if (msg.event == 'on'){
 					device.device_ison = true;
 				} else {
