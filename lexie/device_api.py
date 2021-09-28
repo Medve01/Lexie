@@ -3,6 +3,7 @@ import json
 from flask import Blueprint, current_app, request
 from flask.json import jsonify
 
+from lexie.smarthome import exceptions
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices,
                                          get_all_devices_with_rooms)
@@ -25,13 +26,19 @@ def device_new():
 @device_api_bp.route('/<device_id>', methods=['GET'])
 def device_get(device_id: str):
     """ returns LexieDevice status in"""
-    device = LexieDevice(device_id=device_id)
-    return jsonify(device.to_dict())
+    try:
+        device = LexieDevice(device_id=device_id)
+        return jsonify(device.to_dict())
+    except exceptions.NotFoundException:
+        return jsonify({'error': f'Device not found with id: {device_id}'}), 404
 
 @device_api_bp.route('/<device_id>/<command>', methods=['GET'])
 def device_command(device_id: str, command: str):
     """ issues a command to the device """
-    device = LexieDevice(device_id)
+    try:
+        device = LexieDevice(device_id)
+    except exceptions.NotFoundException:
+        return jsonify({'error': f'Device not found with id: {device_id}'}), 404
     valid_commands = [
         "on",
         "off",

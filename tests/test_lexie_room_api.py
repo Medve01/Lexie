@@ -4,6 +4,7 @@ from typing import Any
 import pytest
 
 from lexie.smarthome.Room import Room
+from lexie.smarthome import exceptions
 from tests.fixtures.test_flask_app import app, client
 
 test_room_data = {
@@ -41,6 +42,20 @@ def test_room_api_get_room(monkeypatch, client):
         'room_id': '1234',
         'room_name': 'Mock room'
         }
+
+def test_room_api_get_room_nonexisting(monkeypatch, client):
+    """" tests /api/room/room_id"""
+    def mockroom_init(Any, room_id):
+        raise exceptions.NotFoundException
+    
+    def mockroom_to_dict(Any):
+        mock_room = MockRoom('1234')
+        return mock_room.to_dict()
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', mockroom_init)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.to_dict', mockroom_to_dict)
+    res = client.get('/api/room/12534')
+
+    assert res.status_code == 404
 
 def test_room_api_get_all_rooms(monkeypatch, client):
     """ tests /api/device """
@@ -86,3 +101,14 @@ def test_room_api_delete(monkeypatch, client):
 
     res = client.delete('/api/room/1234')
     assert json.loads(res.data) == 'Room 1234 deleted.'
+
+def test_room_api_delete_nonexisting(monkeypatch, client):
+    """ tests DELETE /api/device/6666 """
+    def mock_delete_room(room_id):
+        raise exceptions.NotFoundException
+
+    monkeypatch.setattr('lexie.smarthome.Room.Room.delete', mock_delete_room)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+
+    res = client.delete('/api/room/1234')
+    assert res.status_code == 404

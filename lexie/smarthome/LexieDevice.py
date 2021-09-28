@@ -5,7 +5,7 @@ from typing import Any, Dict
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
 from lexie.caching import get_value_from_cache, set_value_in_cache
-from lexie.smarthome import models
+from lexie.smarthome import exceptions, models
 from lexie.smarthome.ILexieDevice import ILexieDevice
 from lexie.smarthome.Room import Room
 
@@ -15,7 +15,7 @@ class LexieDeviceType: #pylint: disable=too-few-public-methods
     def __init__(self, devicetype_id: int) -> None:
         devicetype = models.DeviceType.query.filter_by(id=devicetype_id).first()
         if devicetype_id is None:
-            raise Exception(f'Invalid device type id: {devicetype_id}') # pragma: nocover
+            raise exceptions.NotFoundException(f'Invalid device type id: {devicetype_id}') # pragma: nocover
         self.id = devicetype.id # pylint:disable=invalid-name
         self.name = devicetype.name
         self.actions = []
@@ -37,7 +37,7 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         self.device_id = device_id
         device = models.Device.query.filter_by(id=device_id).first()
         if device is None:
-            raise Exception(f'Device {device_id} does not exist in database')
+            raise exceptions.NotFoundException(f'Device {device_id} does not exist in database')
 
         self.device_type = LexieDeviceType(device.device_type)
         self.device_name = device.name
@@ -51,11 +51,6 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         self.online = status["online"]
         self.ison = status["ison"]
         self.room = Room(device.room_id)
-        # self.room: Optional[Room]=None
-        # if device.room_id is not None:
-        #     self.room = Room(device.room_id)
-        # else:
-        #     self.room = None
 
     @staticmethod
     def new(

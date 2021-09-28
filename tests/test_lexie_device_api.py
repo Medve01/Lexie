@@ -4,6 +4,7 @@ from typing import Any
 import pytest
 
 from lexie.smarthome.LexieDevice import LexieDevice, LexieDeviceType
+from lexie.smarthome import exceptions
 from tests.fixtures.test_flask_app import app, client
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from tests.fixtures.mock_lexieclasses import device_data
@@ -39,6 +40,19 @@ def test_api_get_device(monkeypatch, client):
             "device_online": "ONLINE"
         }
 
+def test_api_get_device_nonexisting(monkeypatch, client):
+    """" tests /api/device/device_id"""
+    def mocklexiedevice_init(Any, device_id):
+        raise exceptions.NotFoundException
+    
+    def mocklexiedevice_to_dict(Any):
+        mock_device = MockLexieDevice('1234')
+        return mock_device.to_dict()
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mocklexiedevice_init)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.to_dict', mocklexiedevice_to_dict)
+    res = client.get('/api/device/1234')
+    assert res.status_code == 404
+
 @pytest.mark.parametrize(
     ("onoff","results"),
     (
@@ -63,6 +77,24 @@ def test_api_device_relay_actions(monkeypatch, client, onoff, results): #pylint:
     monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_action_toggle)
     res = client.get('/api/device/1234/' + onoff)
     assert json.loads(res.data) == results
+
+def test_api_device_relay_actions_nonexisting_device(monkeypatch, client): #pylint: disable=redefined-outer-name
+    """ tests /api/device/1234/on off toggle"""
+
+    def mock_action_turn(Any, onoff):
+        mock_device = MockLexieDevice('1234')
+        return mock_device.action_turn(onoff)
+    def mock_action_toggle(Any):
+        mock_device = MockLexieDevice('1234')
+        return mock_device.action_toggle()
+    def mocklexiedevice_init(Any, device_id):
+        raise exceptions.NotFoundException
+
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mocklexiedevice_init)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_turn', mock_action_turn)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_action_toggle)
+    res = client.get('/api/device/1234/toggle')
+    assert res.status_code == 404
 
 def test_api_new_device(monkeypatch, client):
     """ tests PUT /api/device """

@@ -1,6 +1,6 @@
 from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
-from lexie.smarthome import models
+from lexie.smarthome import exceptions, models
 
 
 class Room:
@@ -12,7 +12,8 @@ class Room:
         else:
             room = models.Room.query.filter_by(id=room_id).first()
             if room is None:
-                raise Exception(f'Room with id {room_id} does not exist')
+                # raise Exception(f'Room with id {room_id} does not exist')
+                raise exceptions.NotFoundException(f'Room ({room_id} does not exist')
             self.name = room.name
             self.id = room.id # pylint: disable=invalid-name
 
