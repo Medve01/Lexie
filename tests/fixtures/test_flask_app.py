@@ -3,7 +3,9 @@ import json
 import pytest
 
 from lexie.app import create_app
+from tests.fixtures.mock_lexieclasses import MockLexieDevice
 
+MOCK_CALLED=""
 
 @pytest.fixture
 def app(monkeypatch):

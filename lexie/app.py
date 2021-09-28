@@ -3,15 +3,13 @@ import json
 
 import click
 from flask import Flask, redirect
+from flask_socketio import SocketIO
 
 from lexie.caching import flush_cache
-from lexie.device_api import device_api_bp
-from lexie.events import events_bp
-from lexie.room_api import room_api_bp
 from lexie.smarthome.models import db as sqla_db
 from lexie.smarthome.models import prepare_db
-from lexie.views import ui_bp
 
+socketio = SocketIO()
 
 def create_app(testing:bool=False):#pylint: disable=unused-argument
     """default app"""
@@ -21,13 +19,19 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     @app.route('/')
     def index():
         return redirect('/ui')
-
+    # isort: off
+    from lexie.device_api import device_api_bp # pylint: disable=import-outside-toplevel
+    from lexie.events import events_bp # pylint: disable=import-outside-toplevel
+    from lexie.room_api import room_api_bp # pylint: disable=import-outside-toplevel
+    from lexie.views import ui_bp # pylint: disable=import-outside-toplevel
+    # isort: on
     app.register_blueprint(device_api_bp)
     app.register_blueprint(room_api_bp)
     app.register_blueprint(ui_bp)
     app.register_blueprint(events_bp)
     sqla_db.app = app
     sqla_db.init_app(app)
+    socketio.init_app(app, cors_allowed_origins='*', async_mode='eventlet')
     prepare_db()
     # logger = logging.basicConfig(level=logging.DEBUG)
     # logging.getLogger().addHandler(logger)
