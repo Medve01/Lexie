@@ -6,11 +6,11 @@ function load_devices(){
 		if (request.status >= 200 && request.status < 400) {
 			devices = JSON.parse(request.responseText);
 		} else {
-			console.log('HTTP Error fetching devices')
+			console.log('HTTP Error fetching devices');
 		}
 	}
 	request.onerror = function(){
-		console.log('Network error during fetching devices')
+		console.log('Network error during fetching devices');
 	}
 
 	request.send()
@@ -27,13 +27,12 @@ controller = {
 				console.log(request.responseText)
 				result = JSON.parse(request.responseText);
 			} else {
-				console.log('HTTP Error fetching devices')
+				console.log('HTTP Error fetching devices');
 			}
 		}
-		request.send()
+		request.send();
 	}
 }
-console.log(devices)
 load_devices();
 room_view = rivets.bind(
 	document.querySelector('#room'),{
@@ -46,15 +45,13 @@ socket.on('event', function(msg) {
 	console.log('Event received', msg);
 	if (msg['event'] == 'on' || msg['event'] == 'off'){
 		devices.forEach(function update_device(device, index){
-			console.log(device['device_id'])
 			if (device['device_id'] == msg['device_id']){
-				console.log('match')
-				if (msg['event'] == 'on'){
-					device['device_ison'] = true
+				if (msg.event == 'on'){
+					device.device_ison = true;
 				} else {
-					device['device_ison'] = false
+					device.device_ison = false;
 				}
 			}
 		});
 	}
-})
+});
