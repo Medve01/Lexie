@@ -8,7 +8,7 @@ function load_devices(){
 		} else {
 			console.log('HTTP Error fetching devices');
 		}
-	}
+	};
 	request.onerror = function(){
 		console.log('Network error during fetching devices');
 	}

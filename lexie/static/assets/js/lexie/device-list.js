@@ -1,7 +1,7 @@
 
 
 function setupevents(device_id){
-    console.log('Setting up events for device ' + device_id)
+    console.log('Setting up events for device ' + device_id);
     var request = new XMLHttpRequest();
     request.open('GET', '/api/device/' + device_id + '/setup-events', false);
     request.onload = function() {
@@ -14,10 +14,10 @@ function setupevents(device_id){
         } else {
             console.log('HTTP Setting up events');
         }
-    }
+    };
     request.onerror = function(){
         console.log('Network error during events setup');
-    }
+    };
     
-    request.send()
+    request.send();
 }
