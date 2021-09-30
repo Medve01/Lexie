@@ -182,35 +182,9 @@
 body {
 	font-size: 20px
 }
-/* body {
-  background: #1b1a23;
-  height: 100vh;
-  font: 400 16px "Poppins", sans-serif;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-} */
 
-
-/* end power button css */
-
-
-/* body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    width: 100%;
-    height: 100vh;
-    background-color: #d1dad3;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 17px;
-} */
 
 .container {
-    /* max-width: 500px;
-    width: 100%; */
     display: flex;
     flex-wrap: wrap;
     justify-content: space-around;
@@ -221,10 +195,6 @@ body {
     padding: 10px 20px;
     border-radius: 10px;
     margin-bottom: 30px;
-    /* box-shadow: -8px -8px 15px rgba(0,0,0, .3),
-                10px 10px 10px  rgba(255,255,255,.7),
-                inset 8px 8px 15px rgba(0,0,0, .3),
-                inset 10px 10px 10px rgba(255,255,255,.7); */
     justify-content: space-between;
     align-items: center;
 }
@@ -304,59 +274,121 @@ body {
 		</div>
 
 			<div class="row" id="room">
-				<div class="col-md-4">
+				<div class="col-md-4" rv-each-room="rooms">
+
+<!-- Room -->
+
 					<div class="card">
-						<div class="card-header">
-							<div class="card-title">Living Room</div>
+            <div class="card-header">
+							<div class="card-head-row">
+								<div class="card-title" rv-text="room.room_name"></div>
+								<div class="card-tools">
+                  <div class="dropdown">
+                    <button class="btn btn-dropdown-card-header btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                      <i class="icon-options-vertical"></i>
+                    </button>
+                    <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                      <a class="dropdown-item" href="#">Rename room</a>
+                      <a class="dropdown-item" href="#">Delete room</a>
+                    </div>
+                  </div>
+                </div>
+							</div>
 						</div>
-						<!-- <div class="card-body pb-0" rv-each-device="devices"> -->
-						<div class="card-body pb-0" rv-each-device="devices">
+              <!-- Device -->									
+            <div class="card-body pb-0" rv-each-device="room.room_devices">
+              <div class="switch-holder">
+                <div class="switch-label">
+                  <span rv-text="device.device_name"></span>
+                  <span rv-hide="device.device_online">offline</span>
+                </div>
+                <div class="power-switch">
+                  <input type="checkbox" rv-checked="device.device_ison" rv-on-click="controller.toggle_relay" rv-enabled="device.device_online"/>
+                  <div class="button">
+                    <svg class="power-off">
+                      <use xlink:href="#line" class="line" />
+                      <use xlink:href="#circle" class="circle" />
+                    </svg>
+                    <svg class="power-on">
+                      <use xlink:href="#line" class="line" />
+                      <use xlink:href="#circle" class="circle" />
+                    </svg>
+                  </div>
+                </div>
+                <div class="dropdown">
+                  <button class="btn btn-dropdown-card-header btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="icon-options-vertical"></i>
+                  </button>
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="#" data-toggle="modal" rv-data-target="device.device_id | hashtag">Move to room...</a>
+                    <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Open modal for @mdo</button> -->
+                  </div>
+                </div>
+                <div class="modal fade" rv-id="device.device_id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                    <div class="modal-content">
+                      <form action="/ui/move_device" method="post"rv-id="device.device_id">
 
-							<!-- <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> -->
-									
-									<div class="switch-holder">
-										<div class="switch-label">
-											<span rv-text="device.device_name"></span>
-											<span rv-hide="device.device_online">offline</span>
-										</div>
-										<div class="power-switch">
-											<input type="checkbox" rv-checked="device.device_ison" rv-on-click="controller.toggle_relay" rv-enabled="device.device_online"/>
-											<div class="button">
-											  <svg class="power-off">
-												<use xlink:href="#line" class="line" />
-												<use xlink:href="#circle" class="circle" />
-											  </svg>
-											  <svg class="power-on">
-												<use xlink:href="#line" class="line" />
-												<use xlink:href="#circle" class="circle" />
-											  </svg>
-											</div>
-										  </div>
-										  
-										  <!-- SVG -->
-										  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
-											<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" id="line">
-											  <line x1="75" y1="34" x2="75" y2="58"/>
-											</symbol>
-											<symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" id="circle">
-											  <circle cx="75" cy="80" r="35"/>
-											</symbol>
-										  </svg>									</div>
-
-							<div class="separator-dashed"></div>
-				
+                        <div class="modal-header">
+                          <h5 class="modal-title text-primary" id="exampleModalLabel" rv-text="device.device_name"></h5>
+                          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                            <span aria-hidden="true">&times;</span>
+                          </button>
+                        </div>
+                        <div class="modal-body">
+                            <div class="form-group">
+                              <input type="hidden" name="device_id" rv-value="device.device_id"></input>
+                              <room-selector></room-selector>
+                              <!--  class="col-form-label" -->
+                              <!-- class="form-control input-border-bottom" -->
+                            </div>
+                          </form>
+                        </div>
+                        <div class="modal-footer">
+                          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                          <button type="submit" class="btn btn-primary" rv-on-click="controller.move_device">Move device</button>
+                        </div>
+                      </form>
+                    </div>
+                  </div>
+                </div>              </div>
+              <div class="separator-dashed"></div>
+              <!-- /Device -->
 						</div>
 					</div>
 				</div>
-			</div>
+
+<!-- /Room -->
+
 		</div>
 	</div>
+  <!-- SVG -->
+  <svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+    <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" id="line">
+      <line x1="75" y1="34" x2="75" y2="58"/>
+    </symbol>
+    <symbol xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 150" id="circle">
+      <circle cx="75" cy="80" r="35"/>
+    </symbol>
+  </svg>
+
+  <!-- rivets templates -->
+  <template id="roomselector-template">
+    <select  id="room-selector" name="room_id" required>
+      {% for room in rooms %}
+        {% if room.id %}
+        <option value="{{room.id}}">{{room.name}}</option>
+        {% endif %}
+      {% endfor %}
+    </select>
+  </template>
 
 {% endblock content %}
 
 {% block javascripts %}
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/sightglass@0.2.6/index.min.js"></script>
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/rivets@0.9.6/dist/rivets.min.js"></script>
+<!-- <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/rivets@0.9.6/dist/rivets.min.js"></script> -->
+<script type="text/javascript" src="/static/assets/js/rivets.bundled.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.2.0/socket.io.js"></script>
 <script type="text/javascript" src="/static/assets/js/lexie/dashboard.js"></script>
 
