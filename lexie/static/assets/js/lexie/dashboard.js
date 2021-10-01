@@ -25,13 +25,8 @@ function select_room(){
 
 controller = {
 	toggle_relay: function(e, model) {
-		console.log(model)
-		console.log(model.rooms)
-		console.log(model['%room%'])
-		console.log(model.rooms[model['%room%']])
-		console.log(model['%device%'])
-		var device = model.rooms[model['%room%']].room_devices[model['%device%']]
-		console.log('toggle device: ' + device.device_id)
+		var device = model.rooms[model['%room%']].room_devices[model['%device%']];
+		console.log('toggle device: ' + device.device_id);
 		var request = new XMLHttpRequest();
 		request.open('GET', '/api/device/' + device.device_id + '/toggle', false);
 		request.onload = function() {
@@ -45,9 +40,9 @@ controller = {
 		request.send();
 	},
 	move_device: function(e, model) {
-		console.log(model.rooms[model['%room%']].room_devices[model['%device%']].device_id)
-		console.log(model)
-		document.forms[model.rooms[model['%room%']].room_devices[model['%device%']].device_id].submit()
+		console.log(model.rooms[model['%room%']].room_devices[model['%device%']].device_id);
+		console.log(model);
+		document.forms[model.rooms[model['%room%']].room_devices[model['%device%']].device_id].submit();
 	},
 	select_room: function(e, model) {
 		console.log('selected')
@@ -61,13 +56,13 @@ load_devices();
 rivets.components['room-selector'] = {
 	template: () => document.getElementById("roomselector-template").innerHTML  ,
 	initialize: (el, attrs) => {
-		return { data: null }
+		return { data: null };
 	  }
-  }
+  };
 
 rivets.formatters.hashtag = str => {
 	return '#'.concat(str);
-}
+};
 
 room_view = rivets.bind(
 	document.querySelector('#room'),{
