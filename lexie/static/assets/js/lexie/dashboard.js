@@ -1,3 +1,4 @@
+/* jshint esversion: 6 */
 var devices;
 function load_devices(){
 	var request = new XMLHttpRequest();
