@@ -28,6 +28,12 @@ class Room:
     def delete(self) -> None:
         """" deletes the room from database """
         if self.id is not None:
+            # check if there are devices in the room. If yes, set room_id to null
+            devices = models.Device.query.filter_by(room_id = self.id).all()
+            if devices is not None:
+                for device in devices:
+                    device.room_id = None
+                models.db.session.commit()
             room = models.Room.query.filter_by(id=self.id).first()
             try:
                 models.db.session.delete(room)

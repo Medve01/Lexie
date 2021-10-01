@@ -17,13 +17,23 @@ function load_devices(){
 	request.send();
 }
 
-let room_selected = ''
+function add_room() {
+	var request = new XMLHttpRequest();
+	room_params = '{"room_name": "' + document.forms.add_room.elements.room_name.value + '"}';
+	console.log(room_params);
+	request.open('PUT', '/api/room/', false);
+	request.onload = function() {
+		if (request.status >= 200 && request.status < 400) {
+			console.log(request.responseText);
+			result = JSON.parse(request.responseText);
+		} else {
+			console.log('HTTP Error creating room');
+		}
+	};
+	request.send(room_params);
+	window.location.reload(true);
 
-function select_room(){
-	console.log('selected')
-	console.log(this.value)
 }
-
 controller = {
 	toggle_relay: function(e, model) {
 		var device = model.rooms[model['%room%']].room_devices[model['%device%']];
@@ -41,16 +51,24 @@ controller = {
 		request.send();
 	},
 	move_device: function(e, model) {
-		console.log(model.rooms[model['%room%']].room_devices[model['%device%']].device_id);
-		console.log(model);
 		document.forms[model.rooms[model['%room%']].room_devices[model['%device%']].device_id].submit();
 	},
-	select_room: function(e, model) {
-		console.log('selected')
-		var args = Array.prototype.slice.call(arguments, 1)
-		console.log(args)
-		console.log(arguments)
-	}
+	delete_room: function(e, model) {
+		room_id = model.rooms[model['%room%']].room_id;
+		console.log('Deleting room ' + room_id);
+		var request = new XMLHttpRequest();
+		request.open('DELETE', '/api/room/' + room_id, false);
+		request.onload = function() {
+			if (request.status >= 200 && request.status < 400) {
+				console.log(request.responseText);
+				result = JSON.parse(request.responseText);
+			} else {
+				console.log('HTTP Error deleting room');
+			}
+		};
+		request.send();
+		window.location.reload(true);
+	},
 }
 load_devices();
 

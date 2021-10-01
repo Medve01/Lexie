@@ -2,6 +2,7 @@ import pytest
 
 from lexie.smarthome.models import db as sqla_db
 from lexie.smarthome.Room import Room
+from lexie.smarthome.LexieDevice import LexieDevice
 from tests.fixtures.test_flask_app import app
 
 
@@ -43,3 +44,17 @@ def test_room_delete(app):
         room.delete()
         with pytest.raises(Exception):
             Room(room_id=room_id)
+
+
+def test_room_delete_with_devices(app):
+    with app.app_context():
+        room = Room.new("Test room for delete test")
+        room_id = room.id
+        device = LexieDevice('1234')
+        device.move(room)
+        room = Room(room_id=room_id)
+        room.delete()
+        with pytest.raises(Exception):
+            Room(room_id=room_id)
+        device = LexieDevice('1234')
+        assert device.room.id is None
