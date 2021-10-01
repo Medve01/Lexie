@@ -259,13 +259,55 @@ body {
 {% endblock stylesheets %}
 
 {% block content %}
-			
+        <!-- add room modal -->
+        <div class="modal fade" id="modal_add_room" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <form id="add_room">
+
+                  <div class="modal-header">
+                    <h5 class="modal-title text-primary" id="exampleModalLabel">Please name your room</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <div class="form-group">
+                        <input type="text" name="room_name"></input>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" onclick="add_room()">Add room</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- /add room modal -->
+
 	<div class="content">
 		<div class="panel-header bg-primary-gradient">
 			<div class="page-inner py-5">
 				<div class="d-flex align-items-left align-items-md-center flex-column flex-md-row">
 					<div>
-						<h2 class="text-white pb-2 fw-bold">Lexie Dashboard</h2>
+						<h2 class="text-white pb-2 fw-bold">
+              <div>
+                
+                <div class="dropdown">
+                  <button visible="false" class="btn btn-dropdown-card-header btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <i class="icon-options-vertical"></i>
+                  </button>
+                  Lexie Dashboard
+                  <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
+                    <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal_add_room">Add room</a>
+                    <a class="dropdown-item" href="/ui/add-device">Add device</a>
+                    <a class="dropdown-item" href="/ui/device-list">All devices</a>
+                  </div>
+                </div>
+              </div>
+            </h2>
 						<h5 class="text-white op-7 mb-2">Your rooms and devices</h5>
 					</div>
 
@@ -277,6 +319,34 @@ body {
 				<div class="col-md-4" rv-each-room="rooms">
 
 <!-- Room -->
+        <!-- delete room modal -->
+        <div class="modal fade" rv-id="room.room_id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+          <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <form action="/ui/delete_room" method="post"rv-id="room.room_id">
+
+                  <div class="modal-header">
+                    <h5 class="modal-title text-primary" id="exampleModalLabel" rv-text="room.room_name"></h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                      <span aria-hidden="true">&times;</span>
+                    </button>
+                  </div>
+                  <div class="modal-body">
+                      <div class="form-group">
+                        Please confirm that you want to delete the room. Any devices assigned to this room, will be preserved and will not be assigned to any room.
+                        <input type="hidden" name="room_id" rv-value="room.room_id"></input>
+                      </div>
+                    </form>
+                  </div>
+                  <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary" rv-on-click="controller.delete_room">Delete room</button>
+                  </div>
+                </form>
+              </div>
+            </div>
+          </div>
+          <!-- /delete room modal -->
 
 					<div class="card">
             <div class="card-header">
@@ -284,12 +354,12 @@ body {
 								<div class="card-title" rv-text="room.room_name"></div>
 								<div class="card-tools">
                   <div class="dropdown">
-                    <button class="btn btn-dropdown-card-header btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                    <button rv-show="room.room_visible" visible="false" class="btn btn-dropdown-card-header btn-sm dropdown-toggle" type="button" id="dropdownMenuButton" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
                       <i class="icon-options-vertical"></i>
                     </button>
                     <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
                       <a class="dropdown-item" href="#">Rename room</a>
-                      <a class="dropdown-item" href="#">Delete room</a>
+                      <a class="dropdown-item" href="#" data-toggle="modal" rv-data-target="room.room_id | hashtag">Delete room</a>
                     </div>
                   </div>
                 </div>

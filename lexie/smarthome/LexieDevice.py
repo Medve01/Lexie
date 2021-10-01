@@ -169,8 +169,14 @@ def get_all_devices_with_rooms():
         temp2 = []
         for device in devices_in_room:
             temp2.append(LexieDevice(device.id).to_dict())
+        if room.id is None:
+            visible = False
+        else:
+            visible = True
         devices.append({
             'room_name': room.name,
-            'room_devices': temp2
+            'room_id': room.id,
+            'room_devices': temp2,
+            'room_visible': visible
         })
     return devices

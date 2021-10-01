@@ -177,8 +177,8 @@ def test_api_get_all_devices_with_rooms(monkeypatch, client):
     monkeypatch.setattr('lexie.smarthome.LexieDevice.get_all_devices', mock_get_all_devices_with_rooms)
     res = client.get('/api/device/?groupby=rooms')
     assert json.loads(res.data) == [
-        {'room_devices': [], 'room_name': 'Test room 1'},
-        {'room_devices': [], 'room_name': 'Test room 2'},
+        {'room_devices': [], 'room_name': 'Test room 1', 'room_id': '1234', 'room_visible': True},
+        {'room_devices': [], 'room_name': 'Test room 2', 'room_id': '4321', 'room_visible': True},
         {'room_devices': [
             {
                 'device_attributes': {'ip_address': '127.0.0.1'},
@@ -197,7 +197,7 @@ def test_api_get_all_devices_with_rooms(monkeypatch, client):
                 'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'}
             }
         ],
-        'room_name': 'Unassigned'}
+        'room_name': 'Unassigned', 'room_id': None, 'room_visible': False}
     ]
 
 def test_api_setup_events(monkeypatch, client):
