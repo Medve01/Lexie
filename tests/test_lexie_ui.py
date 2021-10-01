@@ -6,6 +6,7 @@ import pytest
 from lexie.smarthome.LexieDevice import LexieDeviceType
 from lexie.views import get_drivers
 from tests.fixtures.test_flask_app import app, client
+from tests.fixtures.mock_lexieclasses import MockLexieDevice, MockRoom
 
 
 def mock_os_listdir(directory):
@@ -33,6 +34,11 @@ def test_default_page(client):
 def test_ui_dashboard(client):
     """tests default page"""
     res = client.get('/ui/')
+    assert res.status_code == 200
+
+def test_ui_device_list(client):
+    """tests default page"""
+    res = client.get('/ui/device-list')
     assert res.status_code == 200
 
 def test_ui_404(client):
@@ -79,3 +85,19 @@ def test_add_device_post(monkeypatch, client):
         passed_arguments_to_mock['device_product'] == 'shelly1' and
         passed_arguments_to_mock['device_attributes'] == {'ip_address': '127.0.0.1'}
     )
+
+def test_move_device(monkeypatch, client):
+    def mock_move_device(self, room):
+        global passed_arguments_to_mock
+        passed_arguments_to_mock = room
+        return
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.move', mock_move_device)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    result = client.post('/ui/move_device', data={
+        'device_id': '1234',
+        'room_id': '1234',
+    })
+    global passed_arguments_to_mock
+    assert result.status_code == 302
+    assert passed_arguments_to_mock.id == '1234'
