@@ -19,17 +19,17 @@ function load_devices(){
 
 function add_room() {
 	var request = new XMLHttpRequest();
-	room_params = '{"room_name": "' + document.forms["add_room"].elements.room_name.value + '"}';
-	console.log(room_params)
+	room_params = '{"room_name": "' + document.forms.add_room.elements.room_name.value + '"}';
+	console.log(room_params);
 	request.open('PUT', '/api/room/', false);
 	request.onload = function() {
 		if (request.status >= 200 && request.status < 400) {
-			console.log(request.responseText)
+			console.log(request.responseText);
 			result = JSON.parse(request.responseText);
 		} else {
 			console.log('HTTP Error creating room');
 		}
-	}
+	};
 	request.send(room_params);
 	window.location.reload(true);
 
@@ -54,20 +54,20 @@ controller = {
 		document.forms[model.rooms[model['%room%']].room_devices[model['%device%']].device_id].submit();
 	},
 	delete_room: function(e, model) {
-		room_id = model.rooms[model['%room%']].room_id
-		console.log('Deleting room ' + room_id)
+		room_id = model.rooms[model['%room%']].room_id;
+		console.log('Deleting room ' + room_id);
 		var request = new XMLHttpRequest();
 		request.open('DELETE', '/api/room/' + room_id, false);
 		request.onload = function() {
 			if (request.status >= 200 && request.status < 400) {
-				console.log(request.responseText)
+				console.log(request.responseText);
 				result = JSON.parse(request.responseText);
 			} else {
 				console.log('HTTP Error deleting room');
 			}
-		}
+		};
 		request.send();
-		window.location.reload(true)
+		window.location.reload(true);
 	},
 }
 load_devices();
