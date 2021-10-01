@@ -8,6 +8,7 @@ from jinja2 import TemplateNotFound
 
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices)
+from lexie.smarthome.Room import Room
 
 # Register blueprint
 ui_bp = Blueprint('ui', __name__, url_prefix='/ui')
@@ -37,6 +38,13 @@ def get_drivers():
                     drivers.append(item + " - " + module[:-3])
     return drivers
 
+@ui_bp.route('/move_device', methods=['POST'])
+def move_device():
+    """ post target for dashboard move device modal form """
+    device = LexieDevice(request.form.get('device_id'))
+    device.move(Room(request.form.get('room_id')))
+    return redirect('/ui')
+
 # App main route + generic routing
 @ui_bp.route('/', defaults={'path': 'dashboard'})
 @ui_bp.route('/<path>')
@@ -47,9 +55,12 @@ def index(path):
         # Detect the current page
         segment = get_segment( path )
         logging.info(segment)
-        if segment in ('device-list','dashboard', 'index'):
+        if segment in ('device-list'):
             devices = get_all_devices()
             return render_template( segment + '.html', segment=segment, devices=devices )
+        if segment in ('dashboard', 'index'):
+            rooms = Room.get_all_rooms()
+            return render_template( segment + '.html', segment=segment, rooms=rooms )
         if segment == "add-device":
             # drivers=get_drivers()
             return render_template( segment + '.html', drivers=get_drivers(), segment=segment)

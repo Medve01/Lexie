@@ -12,6 +12,13 @@ device_data={
                 "device_ison": "ON"
             }
 
+class MockRoom: #pylint: disable=too-few-public-methods
+    """ mocks lexie.smarthome.Room.Room """
+    def __init__(self, room_id):
+        """ constructor """
+        self.id = room_id
+        self.name = 'Test room'
+
 class MockLexieDevice: #pylint: disable=too-few-public-methods
     """ mocks LexieDevice so we can test the http endpoint only """
     def __init__(self, device_id): #pylint: disable=redefined-outer-name

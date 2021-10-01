@@ -180,9 +180,9 @@ def test_get_all_devices_with_rooms(app):
     with app.app_context():
         test_devices = get_all_devices_with_rooms()
     assert test_devices == [
-        {'room_name': 'Test room 1', 'room_devices': []},
-        {'room_name': 'Test room 2', 'room_devices': []},
-        {'room_name': 'Unassigned', 'room_devices': [
+        {'room_name': 'Test room 1', 'room_devices': [], 'room_id': '1234', 'room_visible': True},
+        {'room_name': 'Test room 2', 'room_devices': [], 'room_id': '4321', 'room_visible': True},
+        {'room_name': 'Unassigned', 'room_id': None, 'room_visible': False, 'room_devices': [
             {
                 'device_id': '1234',
                 'device_name': 'Test Device',
