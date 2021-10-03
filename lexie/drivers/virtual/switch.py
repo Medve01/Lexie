@@ -1,6 +1,10 @@
 import logging
+
+import requests
 from flask import current_app
 
+from lexie import caching
+from lexie.events import handle_event
 from lexie.smarthome.ILexieDevice import ILexieDevice
 
 
@@ -14,8 +18,12 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
             self.device_data['device_product'] != "switch":
             raise Exception(f'{device_data["device_id"]} is not a Virtual Switch device') # pragma: nocover
         self.device_id = device_data["device_id"]
+        cached_data = caching.get_value_from_cache(f'virtual_switch_{self.device_id}')
+        if cached_data is None:
+            caching.set_value_in_cache(f'virtual_switch_{self.device_id}', {'ison': False})
+            cached_data = {'ison': False}
         self.supports_events = True
-        self.ison = True
+        self.ison = cached_data['ison']
         logging.info("Virtual switch device loaded. ")
 
     def action_turn(self, ison:bool):
@@ -24,8 +32,13 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
             self.ison = True
         else:
             self.ison = False
+        caching.set_value_in_cache(f'virtual_switch_{self.device_id}', {'ison': self.ison})
+        if self.ison:
+            event = 'on'
+        else:
+            event = 'off'
+        requests.get(f'http://127.0.0.1/events/{self.device_id}/{event}')
         return {'online': True, 'ison': self.ison}
-        ## Todo: send in events
 
     def action_toggle(self):
         if self.ison:
@@ -34,7 +47,8 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
 
     def get_status(self):
         """  get relay status """
-        return {'online': True, 'ison': self.ison}
+        cached_data = caching.get_value_from_cache(f'virtual_switch_{self.device_id}')
+        return {'online': True, 'ison': cached_data['ison']}
 
     def setup_events(self): # pylint: disable=no-self-use
         """ sets up Shelly device actions (output on/off) to call Lexie event urls

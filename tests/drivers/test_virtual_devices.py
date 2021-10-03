@@ -15,8 +15,7 @@ def test_virtual_switch_init():
     testdevice = HWDevice(device_data=device_data)
     assert (
         testdevice.device_id == '123456' and
-        testdevice.supports_events is True and
-        testdevice.ison is True)
+        testdevice.supports_events is True)
 
 @pytest.mark.parametrize('onoff, result',
     [

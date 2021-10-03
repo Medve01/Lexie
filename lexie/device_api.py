@@ -4,10 +4,10 @@ from flask import Blueprint, current_app, request
 from flask.json import jsonify
 
 from lexie.smarthome import exceptions
+from lexie.smarthome.exceptions import NotFoundException
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices,
                                          get_all_devices_with_rooms)
-from lexie.smarthome.exceptions import NotFoundException
 
 device_api_bp = Blueprint('device_api', __name__, url_prefix='/api/device')
 

@@ -1,12 +1,12 @@
 # Flask modules
 import logging
 
-from flask import Blueprint, make_response
+from flask import Blueprint
 from flask.json import jsonify
 
 from lexie.app import socketio  # pylint: disable=cyclic-import
+from lexie.smarthome.exceptions import InvalidEventException, NotFoundException
 from lexie.smarthome.LexieDevice import LexieDevice
-from lexie.smarthome.exceptions import NotFoundException, InvalidEventException
 
 # Register blueprint
 events_bp = Blueprint('events', __name__, url_prefix='/events')
