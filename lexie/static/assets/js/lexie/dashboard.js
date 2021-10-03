@@ -69,6 +69,22 @@ controller = {
 		request.send();
 		window.location.reload(true);
 	},
+	delete_device: function(e, model) {
+		device_id = model.rooms[model['%room%']].room_devices[model['%device%']].device_id;
+		console.log('Deleting device ' + device_id)
+		var request = new XMLHttpRequest();
+		request.open('DELETE', '/api/device/' + device_id, false);
+		request.onload = function() {
+			if (request.status >= 200 && request.status < 400) {
+				console.log(request.responseText);
+				result = JSON.parse(request.responseText);
+			} else {
+				console.log('HTTP Error deleting device');
+			}
+		};
+		request.send();
+		window.location.reload(true);
+	},
 }
 load_devices();
 
@@ -82,6 +98,13 @@ rivets.components['room-selector'] = {
 rivets.formatters.hashtag = str => {
 	return '#'.concat(str);
 };
+
+rivets.formatters.modal = function(value, decorator, hashtag) {
+	if (hashtag){
+		return '#'.concat(value).concat('_').concat(decorator);
+	}
+	return value.concat('_').concat(decorator);
+}
 
 room_view = rivets.bind(
 	document.querySelector('#room'),{

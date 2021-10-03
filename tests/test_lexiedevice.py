@@ -5,6 +5,7 @@ import pytest
 # from lexie.db import init__db
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices, get_all_devices_with_rooms)
+from lexie.smarthome.exceptions import NotFoundException
 from lexie.smarthome.Room import Room
 from tests.fixtures.test_flask_app import app
 from tests.fixtures.mock_lexieclasses import device_data
@@ -290,3 +291,17 @@ def test_device_set_status(monkeypatch, app, cache, result):
         testdevice = LexieDevice(device_id='1234')
         testdevice.set_status('test', 'test_value')
     assert MOCK_CALL == result
+
+def test_device_delete(monkeypatch, app):
+    with app.app_context():
+        testdevice = LexieDevice.new(
+            device_name='Test device to be deleted',
+            device_type=LexieDeviceType(1),
+            device_product="shelly1",
+            device_manufacturer='shelly',
+            device_attributes={'ip_address': '127.0.0.1'}
+        )
+        test_id = testdevice.device_id
+        testdevice.delete()
+        with pytest.raises(NotFoundException):
+            testdevice = LexieDevice(device_id=test_id)

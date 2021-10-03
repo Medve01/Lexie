@@ -236,3 +236,27 @@ def test_api_setup_events_unsupported(monkeypatch, client):
     }
     assert res.status_code == 200
     assert MOCK_CALLED != "mock_setup_events_unsupported"
+
+def test_api_device_delete(monkeypatch, client):
+    def mock_device_delete(self):
+        global MOCK_CALLED
+        MOCK_CALLED = True
+        return
+
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.delete', mock_device_delete)
+    global MOCK_CALLED
+    MOCK_CALLED = False
+    result = client.delete('/api/device/1234')
+    assert result.status_code ==200
+    assert MOCK_CALLED is True
+
+def test_api_device_delete_nonexisting(monkeypatch, client):
+    def mock_device_delete(self, device_id):
+        raise exceptions.NotFoundException
+
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mock_device_delete)
+    # monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.delete', mock_device_delete)
+    result = client.delete('/api/device/1234')
+    assert result.status_code ==404
+
