@@ -4,25 +4,22 @@ import logging
 from flask import Blueprint
 from flask.json import jsonify
 
-from lexie.app import socketio  # pylint: disable=cyclic-import
+from lexie.smarthome.events import send_event
 from lexie.smarthome.exceptions import InvalidEventException, NotFoundException
 from lexie.smarthome.LexieDevice import LexieDevice
 
 # Register blueprint
 events_bp = Blueprint('events', __name__, url_prefix='/events')
 
+VALID_EVENTS= ['on', 'off']
 
 def handle_event(device_id, event: str):
     """ handles the event """
-    socketio.emit('event', {'device_id': device_id, 'event': event})
     logging.info("Device: %s just sent an event: %s", device_id, event)
     device = LexieDevice(device_id=device_id)
-    if event == "on":
-        device.set_status('ison', True)
-    elif event == "off":
-        device.set_status('ison', False)
-    else:
+    if event not in VALID_EVENTS:
         raise InvalidEventException
+    send_event(device.device_id, event, event_type='status')
     return jsonify("Event received.")
 
 @events_bp.route('/<device_id>/<event>')

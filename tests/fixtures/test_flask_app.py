@@ -11,9 +11,14 @@ MOCK_CALLED=""
 def app(monkeypatch):
     def mock_prepare_db():
         pass
+    def mock_thread_start(self):
+        pass
+    monkeypatch.setattr('threading.Thread.start', mock_thread_start)
     monkeypatch.setattr('lexie.app.prepare_db', mock_prepare_db)
     _app = create_app(testing=True)
     _app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
+    _app.config['SQLALCHEMY_BINDS'] = {'events': 'sqlite://'}
+    
     import lexie.smarthome.models as models
     models.db.create_all()
     # set up test data
