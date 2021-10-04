@@ -398,7 +398,7 @@ body {
                 <div class="modal fade" rv-id="device.device_id | modal 'deletedevice' false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                       <div class="modal-content">
-                        <form action="/ui/delete_device" method="post"rv-id="device.device_id">
+                        <!-- <form action="/ui/delete_device" method="post"rv-id="device.device_id"> -->
 
                           <div class="modal-header">
                             <h5 class="modal-title text-primary" id="exampleModalLabel" rv-text="device.device_name"></h5>
@@ -417,7 +417,7 @@ body {
                             <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
                             <button type="submit" class="btn btn-primary" rv-on-click="controller.delete_device">Delete device</button>
                           </div>
-                        </form>
+                        <!-- </form> -->
                       </div>
                     </div>
                   </div>
