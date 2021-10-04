@@ -116,17 +116,22 @@ room_view = rivets.bind(
 
 
 // var socket = io.connect('ws://' + document.domain + ':' + location.port, {transports: ['websocket']});
-// socket.on('event', function(msg) {
-// 	console.log('Event received', msg);
-// 	if (msg.event == 'on' || msg.event == 'off'){
-// 		devices.forEach(function update_device(device, index){
-// 			if (device.device_id == msg.device_id){
-// 				if (msg.event == 'on'){
-// 					device.device_ison = true;
-// 				} else {
-// 					device.device_ison = false;
-// 				}
-// 			}
-// 		});
-// 	}
-// });
+var socket = io.connect('ws://' + document.domain + ':' + location.port);
+socket.on('event', function(msg) {
+	console.log('Event received', msg);
+	if (msg.event.event_type == 'status'){
+		if (msg.event.event_data == 'on' || msg.event.event_data == 'off'){
+			devices.forEach(function crawl_rooms(room, index){
+				room.room_devices.forEach(function update_device(device, index){
+					if (device.device_id == msg.device_id){
+						if (msg.event.event_data == 'on'){
+							device.device_ison = true;
+						} else {
+							device.device_ison = false;
+						}
+					}
+				});
+			});
+		}
+	}
+});

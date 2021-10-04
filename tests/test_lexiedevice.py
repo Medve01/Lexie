@@ -108,16 +108,12 @@ def test_device_relay_status_existing_device_from_cache(monkeypatch, app):
         testdevice = LexieDevice(device_id)
         monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.get_status', mock_get_status)
         status = testdevice.get_status(use_cache=False) # calling once so LexieDevice stores in cache
-        assert testdevice.get_status() == { # second time it should come from cache
-            "ison": False,
-            "online": True,
-            'lexie_source': "cache"
-        }
+        assert testdevice.get_status()['lexie_source'] == 'cache'
 
 def test_device_nonexisting_device(app):
     with app.app_context():
         device_id = '12345'
-        with pytest.raises(Exception):
+        with pytest.raises(NotFoundException):
             LexieDevice(device_id)
 
 def test_device_new(app):

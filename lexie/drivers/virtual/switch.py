@@ -4,7 +4,7 @@ import requests
 from flask import current_app
 
 from lexie import caching
-from lexie.events import handle_event
+from lexie.smarthome.events import send_event
 from lexie.smarthome.ILexieDevice import ILexieDevice
 
 
@@ -37,7 +37,7 @@ class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods
             event = 'on'
         else:
             event = 'off'
-        requests.get(f'http://127.0.0.1/events/{self.device_id}/{event}')
+        send_event(device_id=self.device_id, event=event, event_type='status')
         return {'online': True, 'ison': self.ison}
 
     def action_toggle(self):
