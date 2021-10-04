@@ -113,7 +113,7 @@ def test_device_relay_status_existing_device_from_cache(monkeypatch, app):
 def test_device_nonexisting_device(app):
     with app.app_context():
         device_id = '12345'
-        with pytest.raises(Exception):
+        with pytest.raises(NotFoundException):
             LexieDevice(device_id)
 
 def test_device_new(app):

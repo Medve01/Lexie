@@ -119,7 +119,6 @@ room_view = rivets.bind(
 var socket = io.connect('ws://' + document.domain + ':' + location.port);
 socket.on('event', function(msg) {
 	console.log('Event received', msg);
-	console.log(devices)
 	if (msg.event.event_type == 'status'){
 		if (msg.event.event_data == 'on' || msg.event.event_data == 'off'){
 			devices.forEach(function crawl_rooms(room, index){
