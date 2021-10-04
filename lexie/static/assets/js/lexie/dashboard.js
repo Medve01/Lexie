@@ -83,7 +83,7 @@ controller = {
 			}
 		};
 		request.send();
-		// window.location.reload(true);
+		window.location.reload(true);
 	},
 }
 load_devices();
