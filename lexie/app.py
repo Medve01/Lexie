@@ -21,11 +21,13 @@ EVENT_LISTENER_THREAD = threading.Thread() # pylint: disable=bad-thread-instanti
 def event_listener_cancel():
     """ stops thread loop """
     global EVENT_LISTENER_CONTINUE # pylint: disable=global-statement
-    EVENT_LISTENER_CONTINUE = False
+    EVENT_LISTENER_CONTINUE = False # pragma: nocover
 
-def event_listener():
+def event_listener(once: bool = False):
     """ fetches and handles events from database """
     # print('Fetching events')
+    global EVENT_LISTENER_CONTINUE # pylint: disable=global-statement
+    EVENT_LISTENER_CONTINUE = True # ensure that we run at least once
     while EVENT_LISTENER_CONTINUE:
         event = models.db.session.query(models.Event).order_by(models.Event.id.desc()).first()
         while event:
@@ -41,7 +43,10 @@ def event_listener():
             models.db.session.delete(event)
             models.db.session.commit()
             event = models.db.session.query(models.Event).order_by(models.Event.id.desc()).first()
-        time.sleep(1)
+        if once:
+            EVENT_LISTENER_CONTINUE = False
+        else:
+            time.sleep(1) # pragma: nocover
 
 def event_listener_start():
     """ starts event_listener thread on start """

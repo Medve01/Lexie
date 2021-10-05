@@ -128,6 +128,7 @@ def test_event_listener(app, monkeypatch, onoff, result):
             'status_value': value
         }
         return
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
     monkeypatch.setattr('lexie.app.socketio.emit', mock_socketio_emit)
     monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.set_status', mock_set_status)
     # put an event in DB
@@ -136,7 +137,7 @@ def test_event_listener(app, monkeypatch, onoff, result):
     MOCK_CALL = {}
     with app.app_context():
         send_event('1234', onoff, 'status')
-        event_listener()
+        event_listener(once=True)
     # call event_listener
     # verify if mock_socketio_emit and mock_set_status were properly called
     assert MOCK_SIO_CALL == result
