@@ -732,6 +732,14 @@ python-versions = ">=3.6"
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
+name = "tinydb"
+version = "4.5.2"
+description = "TinyDB is a tiny, document oriented database optimized for your happiness :)"
+category = "main"
+optional = false
+python-versions = ">=3.5,<4.0"
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -847,7 +855,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "1a4d1abeeef9550b161b8be21bbb85beaeef1e96cb2d6d65ff516dcbe7064caf"
+content-hash = "99da7d4f6643439f0165f0e1675f5ea53759bf3175b7e0ee0e18c04db2c6d98e"
 
 [metadata.files]
 astroid = [
@@ -1339,6 +1347,10 @@ sqlalchemy-stubs = [
 stevedore = [
     {file = "stevedore-3.4.0-py3-none-any.whl", hash = "sha256:920ce6259f0b2498aaa4545989536a27e4e4607b8318802d7ddc3a533d3d069e"},
     {file = "stevedore-3.4.0.tar.gz", hash = "sha256:59b58edb7f57b11897f150475e7bc0c39c5381f0b8e3fa9f5c20ce6c89ec4aa1"},
+]
+tinydb = [
+    {file = "tinydb-4.5.2-py3-none-any.whl", hash = "sha256:3c5e5c72c98db07e707be4e25f9e135a8a14b96938e4745b1b7187fec523ff58"},
+    {file = "tinydb-4.5.2.tar.gz", hash = "sha256:7d18b2d0217827c188f177cd23df60e5cd5316a717e836a8e21c8c2488262cf5"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},

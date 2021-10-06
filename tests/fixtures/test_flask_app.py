@@ -18,6 +18,7 @@ def app(monkeypatch):
     _app = create_app(testing=True)
     _app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
     _app.config['SQLALCHEMY_BINDS'] = {'events': 'sqlite://'}
+    _app.config['ROUTINES_DB'] = '/tmp/routines_db.json'
     
     import lexie.smarthome.models as models
     models.db.create_all()
