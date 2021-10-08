@@ -93,7 +93,7 @@ def save_step(trigger_id):
     elif step_type == StepType.Delay:
         step_to_add = Step.new(
             step_type=StepType.Delay,
-            delay_duration=request.form.get('delay_duration')
+            delay_duration=int(request.form.get('delay_duration'))
         )
     if trigger.next_step is None:
         trigger.add_next(step_to_add)
