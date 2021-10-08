@@ -15,3 +15,9 @@ Current state is extremely early, version number is closer to negative than to 0
 - Auto-configure Shelly devices with URLs towards Lexie, so they update their status without the need for polling
 
 Thw whole idea came to me in a way that I'm currently using Node-RED for this purpose, but setting up a new device is a 10-30 min task in node-red including copy/pasting flows, etc. Also, my node-red config already stretches the capabilities of my dedicated Raspberry PI3 and I truly beleive that that kind of hardware should be enough for my purposes.
+
+## Screenshots
+![Dashboard](https://github.com/Medve01/Lexie/blob/main/dashboard.png?raw=true)
+![Dashboard with menu](https://github.com/Medve01/Lexie/blob/main/dashboard-2.png?raw=true)
+![Edit routine](https://github.com/Medve01/Lexie/blob/main/edit-routine.png?raw=true)
+![List devices](https://github.com/Medve01/Lexie/blob/main/list-devices.png?raw=true)
