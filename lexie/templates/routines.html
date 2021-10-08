@@ -1,0 +1,77 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} Tables {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+	<div class="content">
+		<div class="page-inner">
+			<div class="page-header">
+				<h4 class="page-title">Routines</h4>
+			</div>
+			<div class="row">
+				<div class="col-md-auto">
+					<div class="card">
+						<div class="card-body">
+							<div class="card-sub">
+								All routines defined in Lexie Smart Home<br/>
+                                <a href="/ui/add-routine">New routine</a>
+							</div>
+                            <ul>
+                            {% for trigger in triggers %}
+                                <li>
+                                    {{ trigger.name }}
+                                    <a href="/ui/edit-routine/{{trigger.id}}">Edit</a>
+                                </li>
+                            {% endfor %}
+                            </ul>
+						</div>
+					</div>
+				</div>
+
+				</div>
+			</div>
+            <a href="/">Back to Dashboard</a>
+		</div>
+	</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+	<!-- Atlantis DEMO methods, don't include it in your project! -->
+	<script src="/static/assets/js/setting-demo2.js"></script>
+	<script>
+		$('#displayNotif').on('click', function(){
+			var placementFrom = $('#notify_placement_from option:selected').val();
+			var placementAlign = $('#notify_placement_align option:selected').val();
+			var state = $('#notify_state option:selected').val();
+			var style = $('#notify_style option:selected').val();
+			var content = {};
+
+			content.message = 'Turning standard Bootstrap alerts into "notify" like notifications';
+			content.title = 'Bootstrap notify';
+			if (style == "withicon") {
+				content.icon = 'fa fa-bell';
+			} else {
+				content.icon = 'none';
+			}
+			content.url = 'index.html';
+			content.target = '_blank';
+
+			$.notify(content,{
+				type: state,
+				placement: {
+					from: placementFrom,
+					align: placementAlign
+				},
+				time: 1000,
+			});
+		});
+	</script>
+	<script type="text/javascript" src="/static/assets/js/lexie/device-list.js"></script>
+{% endblock javascripts %}

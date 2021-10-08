@@ -54,17 +54,33 @@ def search_in_db(table, key, value):
         return None
     return result[0]
 
+def fetch_all_from_db(table):
+    """ fetches all records of a specific type """
+    routines_db = tinydb.TinyDB(current_app.config['ROUTINES_DB'])
+    db_table = routines_db.table(table)
+    return db_table.all()
+
 class DeviceEvent: # pylint: disable=too-few-public-methods
     """ supported Device Events in Triggers """
     TurnedOn = 'turned_on'
     TurnedOff = 'turned_off'
     StateChanged = 'state_changed'
+    _as_dict = {
+        'TurnedOn': 'turned_on',
+        'TurnedOff': 'turned_off',
+        'StateChanged': 'state_changed'
+    }
 
 class DeviceAction: # pylint: disable=too-few-public-methods
     """ supported Device Actions in Steps """
     TurnOn = 'turn_on'
     TurnOff = 'turn_off'
     Toggle = 'toggle'
+    _as_dict = {
+        'TurnOn': 'turn_on',
+        'TurnOff': 'turn_off',
+        'Toggle': 'toggle'
+    }
 
 class StepType: # pylint: disable=too-few-public-methods
     """ There are two kind of routine steps for now:
@@ -73,6 +89,10 @@ class StepType: # pylint: disable=too-few-public-methods
     action param should be a LexieDeviceAction class, but later"""
     DeviceAction = 'device_action'
     Delay = 'delay'
+    _as_dict = {
+        'DeviceAction': 'device_action',
+        'Delay': 'delay',
+    }
 
 class Step: #pylint: disable=too-few-public-methods
     """ represents an action that can be taken in a routine. This should include:
@@ -164,8 +184,12 @@ class TriggerType: # pylint: disable=too-few-public-methods
         Timer which triggers a routine at a certain time of the day"""
     DeviceEvent = 'device_event'
     Timer = 'timer'
+    _as_dict = {
+        'DeviceEvent': 'device_event',
+        'Timer': 'timer'
+    }
 
-class Trigger: # pylint: disable=too-few-public-methods
+class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """ the first object in a routine. A Trigger starts a series of steps
         A Trigger is an event of a LexieDevice """
     def __init__(self, trigger_id) -> None:
@@ -173,11 +197,13 @@ class Trigger: # pylint: disable=too-few-public-methods
         self.id = self.trigger_dict['id'] #pylint: disable=invalid-name
         self.type = self.trigger_dict['type']
         self.device_id = self.trigger_dict['device_id']
+        self.device = LexieDevice(self.trigger_dict['device_id'])
         self.event = self.trigger_dict['event']
         self.next_step = self.trigger_dict['next_step']
+        self.name = self.trigger_dict['name']
 
     @staticmethod
-    def new(trigger_type: str, device: LexieDevice, event: str):
+    def new(trigger_type: str, device: LexieDevice, event: str, name: str):
         """ Creates a new Trigger """
         # Timer is not implemented yet at all.
         if trigger_type == TriggerType.Timer:
@@ -185,6 +211,7 @@ class Trigger: # pylint: disable=too-few-public-methods
         trigger_id = uuid()
         trigger_dict = {
             'id': trigger_id,
+            'name': name,
             'type': 'DeviceEvent',
             'device_id': device.device_id,
             'event': event,
@@ -208,3 +235,34 @@ class Trigger: # pylint: disable=too-few-public-methods
             update_in_db('trigger', self.trigger_dict)
         else:
             raise NextStepAlreadyDefinedException('Cannot add next_step, next_step is already defined')
+
+    def last_in_chain(self):
+        """ finds the last step of a routine """
+        if self.next_step is None:
+            return self
+        current_step = Step(self.next_step)
+        while current_step.next_step is not None:
+            current_step = current_step.next_step
+        return current_step
+
+    def chain_to_list(self):
+        """ returns a list with all the steps in the chain """
+        if self.next_step is None:
+            return []
+        step_list = []
+        current_step = Step(self.next_step)
+        step_list.append(current_step)
+        while current_step.next_step is not None:
+            current_step = current_step.next_step
+            step_list.append(current_step)
+        return step_list
+
+
+    @staticmethod
+    def get_all():
+        """ gets all triggers from database and returns a List of Trigger objects """
+        all_triggers = fetch_all_from_db('trigger')
+        triggers = []
+        for db_trigger in all_triggers:
+            triggers.append(Trigger(db_trigger['id']))
+        return triggers
