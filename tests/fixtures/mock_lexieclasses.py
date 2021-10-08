@@ -1,5 +1,6 @@
 import pytest
 from lexie.smarthome.LexieDevice import LexieDeviceType
+from lexie.smarthome.Room import Room
 
 device_data={
                 "device_id": "123456",
@@ -14,7 +15,7 @@ device_data={
 
 class MockRoom: #pylint: disable=too-few-public-methods
     """ mocks lexie.smarthome.Room.Room """
-    def __init__(self, room_id):
+    def __init__(self, room_id = None):
         """ constructor """
         self.id = room_id
         self.name = 'Test room'
@@ -31,6 +32,7 @@ class MockLexieDevice: #pylint: disable=too-few-public-methods
         self.device_attributes = device_data['device_attributes']
         self.device_ison = device_data['device_ison']
         self.device_online = device_data['device_online']
+        self.room = Room('1234')
 
     def action_turn(self, onoff): #pylint: disable=no-self-use
         """ returns a mocked response of HWDevice.action_turn """

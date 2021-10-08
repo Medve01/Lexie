@@ -1,0 +1,135 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+	<div class="content">
+		<div class="page-inner">
+			<div class="page-header">
+				<h4 class="page-title">Edit routine</h4>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+<form action="/ui/edit-routine/{{trigger.id}}" method="POST" name="edit_routine">
+						<div class="card-body">
+							<div class="row">
+								<div class="col-md-6 col-lg-4">
+									<div class="form-group">
+										<label for="trigger_sum">IF</label>
+										<div id="trigger_sum">
+											{{trigger.device.room.name}} - {{trigger.device.device_name}} {{trigger.event}}<br/>
+										</div>
+											{% for step in steps %}
+											<label for="step_{{step.id}}">THEN</label>
+											<div id="step_{{step.id}}">
+												{% if step.step_type == 'device_action' %}
+													{{ step.step_type }} - {{ step.device.room.name }} / {{ step.device.device_name }} - {{ step.action }}<br/>
+												{% endif %}
+												{% if step.step_type == 'delay' %}
+													Wait for {{ step.delay_duration }} seconds<br/>
+												{% endif %}
+											</div>
+											{% endfor %}
+									</div>
+								</div>
+								<div class="col-md-6 col-lg-4" id="add_action">
+									<label for="add_action" class="placeholder">THEN</label>
+									<div class="form-group form-floating-label">
+										<select class="form-control input-border-bottom" id="selectStepType" name="step_type" onchange="showhide()" required>
+											<option value=""></option>
+											{% for step_type in step_types %}
+											<option>{{step_type}}</option>
+											{% endfor %}
+										</select>
+										<label for="selectStepType" class="placeholder">Action type</label>
+									</div>
+									<div class="form-group form-floating-label" id="selectDeviceHolder">
+										<select class="form-control input-border-bottom" id="selectDevice" name="device" required>
+											<option value=""></option>
+											{% for room in devices %}
+												{% for device in room.room_devices %}
+													<option value="{{ device.device_id }}">{{ room.room_name }} - {{ device.device_name }}</option>
+												{% endfor %}
+											{% endfor %}
+										</select>
+										<label for="selectDevice" class="placeholder">Device</label>
+									</div>
+									<div class="form-group form-floating-label" id="selectActionHolder">
+										<select class="form-control input-border-bottom" id="selectAction" name="action" required>
+											<option value=""></option>
+											{% for action in actions %}
+											<option>{{action}}</option>
+											{% endfor %}
+										</select>
+										<label for="selectAction" class="placeholder">Device Action</label>
+									</div>
+									<div class="form-group form-floating-label" id="selectDurationHolder">
+										<select class="form-control input-border-bottom" id="selectDuration" name="delay_duration" required>
+											<option value=""></option>
+											{% for i in range(1, 60) %}
+											<option>{{i}}</option>
+											{% endfor %}
+										</select>
+										<label for="selectDuration" class="placeholder">Seconds</label>
+									</div>
+
+							</div>
+						</div>
+						<div class="card-action">
+							<input type="submit" class="btn btn-primary" value="Add action"></input>
+							<button class="btn btn-secondary" onclick="document.location.href='/ui/routines'">I'm done</button>
+						</div>
+					</form>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+<script>
+	function showhide(){
+		deviceholder = document.getElementById("selectDeviceHolder");
+		device = document.getElementById("selectDevice");
+		actionholder = document.getElementById("selectActionHolder");
+		action = document.getElementById("selectAction");
+		durationholder = document.getElementById("selectDurationHolder");
+		duration = document.getElementById("selectDuration");
+		
+		if (document.forms.edit_routine.elements.step_type.value == 'DeviceAction'){
+			deviceholder.style.visibility = "visible";
+			device.setAttribute("required", "")
+			actionholder.style.visibility = "visible";
+			action.setAttribute("required", "")
+			durationholder.style.visibility = "hidden";
+			duration.removeAttribute("required");
+		} else if (document.forms.edit_routine.elements.step_type.value == 'Delay') {
+			deviceholder.style.visibility = "hidden";
+			device.removeAttribute("required");
+			actionholder.style.visibility = "hidden";
+			action.removeAttribute("required");
+			durationholder.style.visibility = "visible";
+			duration.setAttribute("required", "")
+		} else {
+			deviceholder.style.visibility = "hidden";
+			device.setAttribute("required", "")
+			actionholder.style.visibility = "hidden";
+			action.setAttribute("required", "")
+			durationholder.style.visibility = "hidden";
+			duration.setAttribute("required", "")
+		}
+	}
+
+</script>
+	<!-- Atlantis DEMO methods, don't include it in your project! -->
+	<script src="/static/assets/js/setting-demo2.js"></script>
+
+{% endblock javascripts %}	

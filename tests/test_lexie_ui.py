@@ -3,10 +3,11 @@ from urllib.parse import urlparse
 
 import pytest
 
-from lexie.smarthome.LexieDevice import LexieDeviceType
+from lexie.smarthome.LexieDevice import LexieDevice, LexieDeviceType
 from lexie.views import get_drivers
-from tests.fixtures.test_flask_app import app, client
+from tests.fixtures.test_flask_app import app, client, routines_db
 from tests.fixtures.mock_lexieclasses import MockLexieDevice, MockRoom
+from lexie.smarthome.Routine import DeviceAction, DeviceEvent, Step, StepType, Trigger, TriggerType
 
 
 def mock_os_listdir(directory):
@@ -101,3 +102,109 @@ def test_move_device(monkeypatch, client):
     global passed_arguments_to_mock
     assert result.status_code == 302
     assert passed_arguments_to_mock.id == '1234'
+
+def test_routine_list_get(monkeypatch, client, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    result = client.get('/ui/routines')
+    assert result.status_code == 200
+
+def test_add_routine_get(monkeypatch, client, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    result = client.get('/ui/add-routine')
+    assert result.status_code == 200
+
+def test_add_routine_post(monkeypatch, client, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    result = client.post('/ui/add-trigger', data={
+        'trigger_type': 'DeviceEvent',
+        'routine_name': 'Test routine',
+        'device': '1234',
+        'event': 'TurnedOn'
+    })
+    assert result.status_code == 302
+    with app.app_context():
+        trigger_id = result.location.split('/')[-1]
+        trigger = Trigger(trigger_id)
+
+def test_edit_routine_get(monkeypatch, client, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    with app.app_context():
+        trigger = Trigger.new(
+            trigger_type=TriggerType.DeviceEvent,
+            device=LexieDevice('1234'),
+            event=DeviceEvent.TurnedOn,
+            name='Test trigger'
+        )
+        result = client.get('/ui/edit-routine/' + trigger.id)
+    assert result.status_code == 200
+
+def test_edit_routine_post_step_deviceaction(monkeypatch, client, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    with app.app_context():
+        trigger = Trigger.new(
+            trigger_type=TriggerType.DeviceEvent,
+            device=LexieDevice('1234'),
+            event=DeviceEvent.TurnedOn,
+            name='Test trigger'
+        )
+        result = client.post('/ui/edit-routine/' + trigger.id, data={
+            'step_type': 'DeviceAction',
+            'device': LexieDevice('1234'),
+            'action': 'TurnOn',
+        })
+        trigger = Trigger(trigger_id=trigger.id)
+        assert result.status_code == 302
+        assert urlparse(result.location).path == '/ui/edit-routine/' + trigger.id
+        next_step = trigger.next_step
+        assert next_step is not None
+
+def test_edit_routine_post_step_delay(monkeypatch, client, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    with app.app_context():
+        trigger = Trigger.new(
+            trigger_type=TriggerType.DeviceEvent,
+            device=LexieDevice('1234'),
+            event=DeviceEvent.TurnedOn,
+            name='Test trigger'
+        )
+        result = client.post('/ui/edit-routine/' + trigger.id, data={
+            'step_type': 'Delay',
+            'delay_duration': '1',
+        })
+        trigger = Trigger(trigger_id=trigger.id)
+        assert result.status_code == 302
+        assert urlparse(result.location).path == '/ui/edit-routine/' + trigger.id
+        next_step = trigger.next_step
+        assert next_step is not None
+
+def test_edit_routine_add_two_steps(monkeypatch, client, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    with app.app_context():
+        trigger = Trigger.new(
+            trigger_type=TriggerType.DeviceEvent,
+            device=LexieDevice('1234'),
+            event=DeviceEvent.TurnedOn,
+            name='Test trigger'
+        )
+        result = client.post('/ui/edit-routine/' + trigger.id, data={
+            'step_type': 'Delay',
+            'delay_duration': '1',
+        })
+        result = client.post('/ui/edit-routine/' + trigger.id, data={
+            'step_type': 'Delay',
+            'delay_duration': '1',
+        })
+        trigger = Trigger(trigger_id=trigger.id)
+        assert result.status_code == 302
+        assert urlparse(result.location).path == '/ui/edit-routine/' + trigger.id
+        first_step = Step(trigger.next_step)
+        second_step = first_step.next_step
+        assert second_step is not None
+        assert isinstance(second_step, Step)

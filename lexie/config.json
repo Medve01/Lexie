@@ -8,5 +8,6 @@
     "SQLALCHEMY_BINDS": {
         "events": "sqlite:////tmp/lexie_events.db"
     },
-    "LEXIE_URL": "http://127.0.0.1"
+    "LEXIE_URL": "http://127.0.0.1",
+    "ROUTINES_DB": "routines_db.json"
 }

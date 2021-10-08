@@ -1,9 +1,10 @@
 import json
-
+import tinydb
 import pytest
 
 from lexie.app import create_app
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
+from lexie.caching import flush_cache
 
 MOCK_CALLED=""
 
@@ -18,7 +19,10 @@ def app(monkeypatch):
     _app = create_app(testing=True)
     _app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite://'
     _app.config['SQLALCHEMY_BINDS'] = {'events': 'sqlite://'}
-    
+    _app.config['ROUTINES_DB'] = '/tmp/routines_db.json'
+    routines_db = tinydb.TinyDB(_app.config['ROUTINES_DB'])
+    routines_db.truncate()
+    flush_cache()
     import lexie.smarthome.models as models
     models.db.create_all()
     # set up test data
@@ -47,7 +51,27 @@ def app(monkeypatch):
     )
     models.db.session.add(device)
     models.db.session.commit()
-    return _app
+    yield _app
+    flush_cache
+    return app
+
+@pytest.fixture
+def routines_db(app):
+    with app.app_context():
+        db = tinydb.TinyDB(app.config['ROUTINES_DB'])
+        db.truncate()
+        triggers = db.table('trigger')
+        triggers.truncate()
+        steps = db.table('step')
+        steps.truncate()
+    yield
+    with app.app_context():
+        db = tinydb.TinyDB(app.config['ROUTINES_DB'])
+        db.truncate()
+        triggers = db.table('trigger')
+        triggers.truncate()
+        steps = db.table('step')
+        steps.truncate()
 
 @pytest.fixture
 def client(app):
