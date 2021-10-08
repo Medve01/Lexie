@@ -144,15 +144,15 @@ def test_trigger_get_all(monkeypatch, app, routines_db):
         assert len(result) == 2
         assert (
             result[0].id == triggers[0].id and
-            result[0].device.device_id == triggers[0].device.device_id,
-            result[0].type == triggers[0].type,
-            result[0].event == triggers[0].event,
+            result[0].device.device_id == triggers[0].device.device_id and
+            result[0].type == triggers[0].type and
+            result[0].event == triggers[0].event
         )
         assert (
             result[1].id == triggers[1].id and
-            result[1].device.device_id == triggers[1].device.device_id,
-            result[1].type == triggers[1].type,
-            result[1].event == triggers[1].event,
+            result[1].device.device_id == triggers[1].device.device_id and
+            result[1].type == triggers[1].type and
+            result[1].event == triggers[1].eventand
         )
 
 def test_trigger_last_in_chain(monkeypatch, app, routines_db):
