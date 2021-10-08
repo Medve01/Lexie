@@ -152,7 +152,7 @@ def test_trigger_get_all(monkeypatch, app, routines_db):
             result[1].id == triggers[1].id and
             result[1].device.device_id == triggers[1].device.device_id and
             result[1].type == triggers[1].type and
-            result[1].event == triggers[1].eventand
+            result[1].event == triggers[1].event
         )
 
 def test_trigger_last_in_chain(monkeypatch, app, routines_db):
@@ -220,3 +220,22 @@ def test_trigger_last_in_chain_no_steps(monkeypatch, app, routines_db):
             event=DeviceEvent.TurnedOff
         )
         assert trigger.last_in_chain() == trigger
+
+def test_trigger_disable_enable(monkeypatch, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    with app.app_context():
+        trigger = Trigger.new(
+            name='test1',
+            trigger_type=TriggerType.DeviceEvent,
+            device=LexieDevice('1234'),
+            event=DeviceEvent.TurnedOff
+        )
+        assert trigger.enabled is True
+        trigger.disable()
+        assert trigger.enabled is False
+        trigger = Trigger(trigger.id)
+        assert trigger.enabled is False
+        trigger.enable()
+        assert trigger.enabled is True
+        trigger = Trigger(trigger.id)
+        assert trigger.enabled is True

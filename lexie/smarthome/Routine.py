@@ -1,3 +1,5 @@
+import time
+
 import tinydb  # pylint: disable=import-error
 from flask import current_app
 from shortuuid import uuid
@@ -178,6 +180,18 @@ class Step: #pylint: disable=too-few-public-methods
         else:
             raise NextStepAlreadyDefinedException('Cannot add next_step, next_step is already defined')
 
+    def execute(self):
+        """ executes the Step """
+        if self.step_type == StepType.Delay:
+            time.sleep(self.delay_duration)
+        elif self.step_type == StepType.DeviceAction:
+            if self.action == DeviceAction.TurnOn:
+                self.device.action_turn(True)
+            elif self.action == DeviceAction.TurnOff:
+                self.device.action_turn(False)
+            elif self.action == DeviceAction.Toggle:
+                self.device.action_toggle()
+
 class TriggerType: # pylint: disable=too-few-public-methods
     """ there are currently two kind of triggers:
         DeviceEvent which triggers a routine if an device produces an event (a switch turned on, a sensor reporting some data)
@@ -201,9 +215,10 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
         self.event = self.trigger_dict['event']
         self.next_step = self.trigger_dict['next_step']
         self.name = self.trigger_dict['name']
+        self.enabled = self.trigger_dict['enabled']
 
     @staticmethod
-    def new(trigger_type: str, device: LexieDevice, event: str, name: str):
+    def new(trigger_type: str, device: LexieDevice, event: str, name: str, enabled: bool=True):
         """ Creates a new Trigger """
         # Timer is not implemented yet at all.
         if trigger_type == TriggerType.Timer:
@@ -215,7 +230,8 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
             'type': 'DeviceEvent',
             'device_id': device.device_id,
             'event': event,
-            'next_step': None
+            'next_step': None,
+            'enabled': enabled
         }
         push_to_db('trigger', trigger_dict)
         return Trigger(trigger_id)
@@ -257,6 +273,17 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
             step_list.append(current_step)
         return step_list
 
+    def enable(self):
+        """ enables trigger """
+        self.enabled = True
+        self.trigger_dict['enabled'] = True
+        update_in_db('trigger', self.trigger_dict)
+
+    def disable(self):
+        """ disables trigger """
+        self.enabled = False
+        self.trigger_dict['enabled'] = False
+        update_in_db('trigger', self.trigger_dict)
 
     @staticmethod
     def get_all():
@@ -266,3 +293,13 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
         for db_trigger in all_triggers:
             triggers.append(Trigger(db_trigger['id']))
         return triggers
+
+    def fire(self):
+        """ looks up actions in steps and executes them """
+        if self.next_step is not None:
+            first_step = Step(self.next_step)
+            first_step.execute()
+            current_step = first_step.next_step
+            while current_step:
+                current_step.execute()
+                current_step = current_step.next_step
