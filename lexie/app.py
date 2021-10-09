@@ -65,7 +65,7 @@ def event_listener(once: bool = False):
         else:
             time.sleep(1) # pragma: nocover
 
-def event_listener_start(app):
+def event_listener_start(app): #pragma: nocover
     """ starts event_listener thread on start """
     print('Starting event listener')
     global EVENT_LISTENER_THREAD # pylint: disable=global-statement

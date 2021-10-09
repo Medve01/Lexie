@@ -3,11 +3,14 @@ from lexie.smarthome.models import Device
 
 import pytest
 
-from tests.fixtures.test_flask_app import app, routines_db
+from tests.fixtures.test_flask_app import MOCK_CALLED, app, routines_db
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from lexie.smarthome.LexieDevice import LexieDevice
 from lexie.smarthome.Routine import Trigger, TriggerType, Step, StepType, DeviceAction, InvalidParametersException, CannotDeleteException, NextStepAlreadyDefinedException, DeviceEvent
 from lexie.smarthome.exceptions import NotFoundException
+from lexie.app import check_and_fire_trigger
+
+MOCK_CALLED=''
 
 def test_trigger_CRD(monkeypatch, app, routines_db):
     monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
@@ -239,3 +242,77 @@ def test_trigger_disable_enable(monkeypatch, app, routines_db):
         assert trigger.enabled is True
         trigger = Trigger(trigger.id)
         assert trigger.enabled is True
+
+def mock_device_turn(self, ison:bool):
+    global MOCK_CALLED
+    if ison:
+        MOCK_CALLED = 'mock_device_turn_on'
+        return {
+            'online': True,
+            'ison': True
+        }
+    MOCK_CALLED = 'mock_device_turn_off'
+    return {
+        'online': True,
+        'ison': False
+    }
+def mock_device_toggle(self):
+    global MOCK_CALLED
+    MOCK_CALLED = 'mock_device_toggle'
+    return {
+        'online': True,
+        'ison': False
+    }
+
+@pytest.mark.parametrize(('command', 'result'),
+        (
+            (DeviceAction.TurnOn,'mock_device_turn_on'),
+            (DeviceAction.TurnOff, 'mock_device_turn_off'),
+            (DeviceAction.Toggle, 'mock_device_toggle')
+        )
+)
+def test_trigger_fire_deviceaction(monkeypatch, app, routines_db, command, result):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_turn', mock_device_turn)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_device_toggle)
+    with app.app_context():
+        trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, device=LexieDevice('1234'), event=DeviceEvent.TurnedOn)
+        step = Step.new(step_type=StepType.DeviceAction, device=LexieDevice('4321'), device_action=command)
+        trigger.add_next(step)
+        trigger.fire()
+    assert MOCK_CALLED==result
+
+def test_trigger_fire_delay(monkeypatch, app, routines_db):
+    def mock_sleep(delay):
+        global MOCK_CALLED
+        MOCK_CALLED='mock_sleep'
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_turn', mock_device_turn)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_device_toggle)
+    monkeypatch.setattr('time.sleep', mock_sleep)
+    with app.app_context():
+        trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, device=LexieDevice('1234'), event=DeviceEvent.TurnedOn)
+        step = Step.new(step_type=StepType.Delay, delay_duration=1)
+        trigger.add_next(step)
+        step.add_next(Step.new(step_type=StepType.Delay, delay_duration=1))
+        trigger.fire()
+    assert MOCK_CALLED=='mock_sleep'
+
+@pytest.mark.parametrize(
+    ('event'),
+    (
+        (DeviceEvent.TurnedOn),(DeviceEvent.TurnedOff), (DeviceEvent.StateChanged)
+    )
+)
+def test_check_and_fire_trigger(monkeypatch, app, routines_db, event):
+    def mock_trigger_fire(self):
+        global MOCK_CALLED
+        MOCK_CALLED='mock_trigger_fire'
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.fire', mock_trigger_fire)
+    with app.app_context():
+        trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, device=LexieDevice('1234'), event=event)
+        global MOCK_CALLED
+        MOCK_CALLED=''
+        check_and_fire_trigger(event_type=event, device_id='1234')
+    assert MOCK_CALLED=='mock_trigger_fire'

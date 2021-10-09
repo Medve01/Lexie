@@ -296,7 +296,7 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
 
     def fire(self):
         """ looks up actions in steps and executes them """
-        if self.next_step is not None:
+        if self.next_step is not None and self.enabled:
             first_step = Step(self.next_step)
             first_step.execute()
             current_step = first_step.next_step
