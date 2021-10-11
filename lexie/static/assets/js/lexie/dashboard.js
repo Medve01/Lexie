@@ -71,7 +71,7 @@ controller = {
 	},
 	delete_device: function(e, model) {
 		device_id = model.rooms[model['%room%']].room_devices[model['%device%']].device_id;
-		console.log('Deleting device ' + device_id)
+		console.log('Deleting device ' + device_id);
 		var request = new XMLHttpRequest();
 		request.open('DELETE', '/api/device/' + device_id, false);
 		request.onload = function() {
@@ -104,7 +104,7 @@ rivets.formatters.modal = function(value, decorator, hashtag) {
 		return '#'.concat(value).concat('_').concat(decorator);
 	}
 	return value.concat('_').concat(decorator);
-}
+};
 
 room_view = rivets.bind(
 	document.querySelector('#room'),{
