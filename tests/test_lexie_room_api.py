@@ -13,7 +13,7 @@ test_room_data = {
             }
 
 class MockRoom: #pylint: disable=too-few-public-methods
-    """ mocks LexieDevice so we can test the http endpoint only """
+    """ mocks Room so we can test the http endpoint only """
     def __init__(self, room_id): #pylint: disable=redefined-outer-name
         """ constructor """
         self.id = room_id

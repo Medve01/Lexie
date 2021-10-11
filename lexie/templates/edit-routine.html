@@ -33,6 +33,7 @@
 												{% if step.step_type == 'delay' %}
 													Wait for {{ step.delay_duration }} seconds<br/>
 												{% endif %}
+												<a href="/ui/remove-action/{{trigger.id}}/{{ step.id }}">[ remove action ]</a>
 											</div>
 											{% endfor %}
 									</div>
@@ -83,6 +84,7 @@
 						<div class="card-action">
 							<input type="submit" class="btn btn-primary" value="Add action"></input>
 							<button class="btn btn-secondary" onclick="document.location.href='/ui/routines'">I'm done</button>
+							<button class="btn btn-error" onclick="document.location.href='/ui/remove-routine/{{trigger.id}}'">Delete routine</button>
 						</div>
 					</form>
 					</div>

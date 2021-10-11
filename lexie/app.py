@@ -65,7 +65,7 @@ def event_listener(once: bool = False):
         else:
             time.sleep(1) # pragma: nocover
 
-def event_listener_start(app):
+def event_listener_start(app): #pragma: nocover
     """ starts event_listener thread on start """
     print('Starting event listener')
     global EVENT_LISTENER_THREAD # pylint: disable=global-statement
@@ -87,11 +87,15 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     from lexie.events import events_bp # pylint: disable=import-outside-toplevel
     from lexie.room_api import room_api_bp # pylint: disable=import-outside-toplevel
     from lexie.views import ui_bp # pylint: disable=import-outside-toplevel
+    from lexie.trigger_api import trigger_api_bp # pylint: disable=import-outside-toplevel
+    from lexie.step_api import step_api_bp # pylint: disable=import-outside-toplevel
     # isort: on
     app.register_blueprint(device_api_bp)
     app.register_blueprint(room_api_bp)
     app.register_blueprint(ui_bp)
     app.register_blueprint(events_bp)
+    app.register_blueprint(trigger_api_bp)
+    app.register_blueprint(step_api_bp)
     sqla_db.app = app
     sqla_db.init_app(app)
     # socketio.init_app(app, cors_allowed_origins='*', async_mode='eventlet')

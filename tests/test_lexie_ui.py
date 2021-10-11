@@ -208,3 +208,34 @@ def test_edit_routine_add_two_steps(monkeypatch, client, app, routines_db):
         second_step = first_step.next_step
         assert second_step is not None
         assert isinstance(second_step, Step)
+
+def test_remove_action(monkeypatch, client, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    with app.app_context():
+        trigger = Trigger.new(
+            name='Test routine',
+            trigger_type=TriggerType.DeviceEvent,
+            device=LexieDevice('1234'),
+            event=DeviceEvent.StateChanged
+        )
+        step = Step.new(
+            step_type=StepType.Delay,
+            delay_duration=1
+        )
+        trigger.add_next(step)
+    result = client.get('/ui/remove-action/' + trigger.id + '/' + step.id)
+    assert result.status_code == 302
+
+def test_remove_routine(monkeypatch, client, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    with app.app_context():
+        trigger = Trigger.new(
+            name='Test routine',
+            trigger_type=TriggerType.DeviceEvent,
+            device=LexieDevice('1234'),
+            event=DeviceEvent.StateChanged
+        )
+    result = client.get('/ui/remove-routine/' + trigger.id)
+    assert result.status_code == 302
