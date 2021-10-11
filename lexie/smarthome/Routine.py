@@ -149,16 +149,21 @@ class Step: #pylint: disable=too-few-public-methods
         push_to_db('step', step_dict)
         return Step(step_id=step_id)
 
-    def __remove_parent(self):
-        """ searches the DB for parent step/trigger and removes reference """
+    def __find_parent(self):
+        """ looks for triggers/steps that have self as next_step """
         parent = search_in_db('trigger', 'next_step', self.id)
         if parent is not None:
-            parent['next_step'] = None
-            update_in_db('trigger', parent)
+            return Trigger(parent['id'])
         parent = search_in_db('step', 'next_step', self.id)
+        if parent is None:
+            return None
+        return Step(parent['id'])
+
+    def __remove_parent(self):
+        """ searches the DB for parent step/trigger and removes reference """
+        parent = self.__find_parent()
         if parent is not None:
-            parent['next_step'] = None
-            update_in_db('step', parent)
+            parent.remove_next()
 
     def delete(self):
         """ Deletes a step.
@@ -169,7 +174,12 @@ class Step: #pylint: disable=too-few-public-methods
             self.__remove_parent()
             delete_from_db('step', self.id)
         else:
-            raise CannotDeleteException('Cannot delete a step which has a next_step')
+            parent = self.__find_parent()
+            if parent is not None:
+                parent.remove_next()
+                parent.add_next(self.next_step)
+            self.next_step = None
+            delete_from_db('step', self.id)
 
     def add_next(self, next_step):
         """ adds a next step pointer """
@@ -179,6 +189,13 @@ class Step: #pylint: disable=too-few-public-methods
             update_in_db('step', self.step_dict)
         else:
             raise NextStepAlreadyDefinedException('Cannot add next_step, next_step is already defined')
+
+    def remove_next(self):
+        """ removes next pointer """
+        if self.next_step is not None:
+            self.next_step = None
+            self.step_dict['next_step'] = None
+            update_in_db('step', self.step_dict)
 
     def execute(self):
         """ executes the Step """
@@ -237,11 +254,17 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
         return Trigger(trigger_id)
 
     def delete(self):
-        """ Deletes a trigger """
-        if self.next_step is None:
-            delete_from_db('trigger', self.id)
-        else:
-            raise CannotDeleteException('Cannot delete a step which has a next_step')
+        """ Deletes a trigger and the whole chain with it """
+        if self.next_step is not None:
+            current = self.last_in_chain()
+            while current:
+                if current.id == self.id:
+                    current = None
+                else:
+                    current.delete()
+                    temp_trigger = Trigger(self.id)
+                    current = temp_trigger.last_in_chain()
+        delete_from_db('trigger', self.id)
 
     def add_next(self, next_step: Step):
         """ adds the first step which should be executed on a trigger """
@@ -251,6 +274,13 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
             update_in_db('trigger', self.trigger_dict)
         else:
             raise NextStepAlreadyDefinedException('Cannot add next_step, next_step is already defined')
+
+    def remove_next(self):
+        """ removes next step if exists """
+        if self.next_step is not None:
+            self.next_step = None
+            self.trigger_dict['next_step'] = None
+            update_in_db('trigger', self.trigger_dict)
 
     def last_in_chain(self):
         """ finds the last step of a routine """

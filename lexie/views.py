@@ -102,6 +102,20 @@ def save_step(trigger_id):
         last_in_chain.add_next(step_to_add)
     return redirect('/ui/edit-routine/' + trigger_id)
 
+@ui_bp.route('/remove-action/<trigger_id>/<step_id>')
+def remove_action(trigger_id, step_id):
+    """ removes an action from a routine chain """
+    step = Step(step_id)
+    step.delete()
+    return redirect('/ui/edit-routine/' + trigger_id)
+
+@ui_bp.route('/remove-routine/<trigger_id>')
+def remove_routine(trigger_id):
+    """ Deletes a routine """
+    trigger = Trigger(trigger_id)
+    trigger.delete()
+    return redirect('/ui/routines')
+
 # App main route + generic routing
 @ui_bp.route('/', defaults={'path': 'dashboard'})
 @ui_bp.route('/<path>')
