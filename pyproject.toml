@@ -14,6 +14,8 @@ gunicorn = "^20.1.0"
 Flask-SQLAlchemy = "^2.5.1"
 Flask-SocketIO = "^5.1.1"
 eventlet = "0.30.2"
+tinydb = "^4.5.2"
+Flask-Threads = "^0.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

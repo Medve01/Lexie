@@ -122,6 +122,15 @@ class LexieDevice(ILexieDevice): # pylint: disable=too-few-public-methods,too-ma
         self.online = device_status["online"]
         return device_status
 
+    def delete(self):
+        """ deletes the device from database """
+        device = models.Device.query.filter_by(id=self.device_id).first()
+        try:
+            models.db.session.delete(device)
+            models.db.session.commit()
+        except: #pragma: nocover
+            raise Exception('Error during room delete from database') #pylint: disable=raise-missing-from #pragma: nocover
+
     def move(self,room:Room) -> None:
         """ Moves a device from one room to another """
         device = models.db.session.query(models.Device).get(self.device_id)

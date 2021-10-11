@@ -5,5 +5,9 @@
     "CACHE_DEFAULT_TIMEOUT": 120,
     "SQLALCHEMY_DATABASE_URI": "sqlite:///lexie_orm.db",
     "SQLALCHEMY_TRACK_MODIFICATIONS": true,
-    "LEXIE_URL": "http://127.0.0.1"
+    "SQLALCHEMY_BINDS": {
+        "events": "sqlite:////tmp/lexie_events.db"
+    },
+    "LEXIE_URL": "http://127.0.0.1",
+    "ROUTINES_DB": "routines_db.json"
 }

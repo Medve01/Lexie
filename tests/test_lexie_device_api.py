@@ -153,14 +153,18 @@ def test_api_get_all_devices(monkeypatch, client):
         'device_name': 'Mock device',
         'device_product': 'shelly1',
         'device_type': {'devicetype_id': 1,
-            'devicetype_name': 'Relay'}},
+            'devicetype_name': 'Relay'},
+        'room': {'room_id': '1234',
+            'room_name': 'Test room 1'}},
         {'device_attributes': {'ip_address': '127.0.0.1'},
         'device_id': '4321',
         'device_manufacturer': 'shelly',
         'device_name': 'Mock device',
         'device_product': 'shelly1',
         'device_type': {'devicetype_id': 1,
-        'devicetype_name': 'Relay'}},
+        'devicetype_name': 'Relay'},
+        'room': {'room_id': '1234',
+            'room_name': 'Test room 1'}},
     ]
 
 def test_api_get_all_devices_with_rooms(monkeypatch, client):
@@ -186,7 +190,9 @@ def test_api_get_all_devices_with_rooms(monkeypatch, client):
                 'device_manufacturer': 'shelly',
                 'device_name': 'Mock device',
                 'device_product': 'shelly1',
-                'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'}
+                'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'},
+                'room': {'room_id': '1234',
+                'room_name': 'Test room 1'},
             },
             {
                 'device_attributes': {'ip_address': '127.0.0.1'},
@@ -194,7 +200,9 @@ def test_api_get_all_devices_with_rooms(monkeypatch, client):
                 'device_manufacturer': 'shelly',
                 'device_name': 'Mock device',
                 'device_product': 'shelly1',
-                'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'}
+                'device_type': {'devicetype_id': 1, 'devicetype_name': 'Relay'},
+                'room': {'room_id': '1234',
+                'room_name': 'Test room 1'},
             }
         ],
         'room_name': 'Unassigned', 'room_id': None, 'room_visible': False}
@@ -236,3 +244,27 @@ def test_api_setup_events_unsupported(monkeypatch, client):
     }
     assert res.status_code == 200
     assert MOCK_CALLED != "mock_setup_events_unsupported"
+
+def test_api_device_delete(monkeypatch, client):
+    def mock_device_delete(self):
+        global MOCK_CALLED
+        MOCK_CALLED = True
+        return
+
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.delete', mock_device_delete)
+    global MOCK_CALLED
+    MOCK_CALLED = False
+    result = client.delete('/api/device/1234')
+    assert result.status_code ==200
+    assert MOCK_CALLED is True
+
+def test_api_device_delete_nonexisting(monkeypatch, client):
+    def mock_device_delete(self, device_id):
+        raise exceptions.NotFoundException
+
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mock_device_delete)
+    # monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.delete', mock_device_delete)
+    result = client.delete('/api/device/1234')
+    assert result.status_code ==404
+

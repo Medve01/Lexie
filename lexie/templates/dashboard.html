@@ -304,6 +304,7 @@ body {
                     <a class="dropdown-item" href="#" data-toggle="modal" data-target="#modal_add_room">Add room</a>
                     <a class="dropdown-item" href="/ui/add-device">Add device</a>
                     <a class="dropdown-item" href="/ui/device-list">All devices</a>
+                    <a class="dropdown-item" href="/ui/routines">Routines</a>
                   </div>
                 </div>
               </div>
@@ -390,11 +391,39 @@ body {
                     <i class="icon-options-vertical"></i>
                   </button>
                   <div class="dropdown-menu" aria-labelledby="dropdownMenuButton">
-                    <a class="dropdown-item" href="#" data-toggle="modal" rv-data-target="device.device_id | hashtag">Move to room...</a>
-                    <!-- <button type="button" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal" data-whatever="@mdo">Open modal for @mdo</button> -->
+                    <a class="dropdown-item" href="#" data-toggle="modal" rv-data-target="device.device_id | modal 'movetoroom' true">Move to room...</a>
+                    <a class="dropdown-item" href="#" data-toggle="modal" rv-data-target="device.device_id | modal 'deletedevice' true">Delete device</a>
                   </div>
                 </div>
-                <div class="modal fade" rv-id="device.device_id" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                <!-- delete device modal -->
+                <div class="modal fade" rv-id="device.device_id | modal 'deletedevice' false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+                  <div class="modal-dialog" role="document">
+                      <div class="modal-content">
+                        <!-- <form action="/ui/delete_device" method="post"rv-id="device.device_id"> -->
+
+                          <div class="modal-header">
+                            <h5 class="modal-title text-primary" id="exampleModalLabel" rv-text="device.device_name"></h5>
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                              <span aria-hidden="true">&times;</span>
+                            </button>
+                          </div>
+                          <div class="modal-body">
+                              <div class="form-group">
+                                Please confirm that you want to delete the device. All data will be deleted and there's no way to undo this.
+                                <input type="hidden" name="device_id" rv-value="device.device_id"></input>
+                              </div>
+                            </form>
+                          </div>
+                          <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                            <button type="button" class="btn btn-primary" rv-on-click="controller.delete_device">Delete device</button>
+                          </div>
+                        <!-- </form> -->
+                      </div>
+                    </div>
+                  </div>
+                  <!-- /delete room modal -->
+                <div class="modal fade" rv-id="device.device_id | modal 'movetoroom' false" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
                   <div class="modal-dialog" role="document">
                     <div class="modal-content">
                       <form action="/ui/move_device" method="post"rv-id="device.device_id">
@@ -416,7 +445,7 @@ body {
                         </div>
                         <div class="modal-footer">
                           <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                          <button type="submit" class="btn btn-primary" rv-on-click="controller.move_device">Move device</button>
+                          <button type="button" class="btn btn-primary" rv-on-click="controller.move_device">Move device</button>
                         </div>
                       </form>
                     </div>

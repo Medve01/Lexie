@@ -4,6 +4,7 @@ from flask import Blueprint, current_app, request
 from flask.json import jsonify
 
 from lexie.smarthome import exceptions
+from lexie.smarthome.exceptions import NotFoundException
 from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices,
                                          get_all_devices_with_rooms)
@@ -71,3 +72,13 @@ def device_get_all():
         for device in devices:
             response.append(device.to_dict())
     return jsonify(response)
+
+@device_api_bp.route('/<device_id>', methods=['DELETE'])
+def device_delete(device_id: str):
+    """ deletes a device """
+    try:
+        device = LexieDevice(device_id=device_id)
+    except NotFoundException:
+        return jsonify({'error': 'device not found'}), 404
+    device.delete()
+    return jsonify('Success')

@@ -10,6 +10,13 @@ from sqlalchemy.orm import relationship
 db = SQLAlchemy()
 BaseModel: DefaultMeta = db.Model
 
+class Event(BaseModel): #pylint: disable=too-few-public-methods # type: ignore
+    """ represents an event in the database"""
+    __bind_key__ = "events"
+    id = db.Column(db.Integer, primary_key = True) # pylint: disable=invalid-name
+    device_id = db.Column(db.String(22), nullable=False)
+    event = db.Column(db.TEXT, nullable=False)
+
 class Room(BaseModel): #pylint: disable=too-few-public-methods # type: ignore
     """ Database model for Rooms in a smart home """
     id = db.Column(db.String(22), primary_key = True) # pylint: disable=invalid-name
@@ -35,10 +42,12 @@ class Device(BaseModel): #pylint: disable=too-few-public-methods # type: ignore
 
 def prepare_db() -> None:
     """ if database found empty, this creates an empty structure and some system data in it """
+    db.create_all() # pragma: nocover
+    db.session.query(Event).delete() # pragma: nocover
+    db.session.commit() # pragma: nocover
     try: # pragma: nocover
         db.engine.execute("select * from device_type") # pragma: nocover
     except OperationalError: # pragma: nocover
-        db.create_all() # pragma: nocover
         db.session.add(DeviceType( # pragma: nocover
             id=1,
             name='Relay',

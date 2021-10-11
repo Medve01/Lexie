@@ -236,6 +236,17 @@ Flask = ">=0.10"
 SQLAlchemy = ">=0.8.0"
 
 [[package]]
+name = "flask-threads"
+version = "0.1.0"
+description = "A helper library to work with threads within Flask applications."
+category = "main"
+optional = false
+python-versions = "*"
+
+[package.dependencies]
+Flask = ">=0.9"
+
+[[package]]
 name = "gitdb"
 version = "4.0.7"
 description = "Git Object Database"
@@ -732,6 +743,14 @@ python-versions = ">=3.6"
 pbr = ">=2.0.0,<2.1.0 || >2.1.0"
 
 [[package]]
+name = "tinydb"
+version = "4.5.2"
+description = "TinyDB is a tiny, document oriented database optimized for your happiness :)"
+category = "main"
+optional = false
+python-versions = ">=3.5,<4.0"
+
+[[package]]
 name = "toml"
 version = "0.10.2"
 description = "Python Library for Tom's Obvious, Minimal Language"
@@ -847,7 +866,7 @@ python-versions = "*"
 [metadata]
 lock-version = "1.1"
 python-versions = "^3.9"
-content-hash = "1a4d1abeeef9550b161b8be21bbb85beaeef1e96cb2d6d65ff516dcbe7064caf"
+content-hash = "ce51bfcb755a19d0dbfb48a7edf6c5045bfc4d8bb7a9f0b705574df079a4c836"
 
 [metadata.files]
 astroid = [
@@ -979,6 +998,9 @@ flask-socketio = [
 flask-sqlalchemy = [
     {file = "Flask-SQLAlchemy-2.5.1.tar.gz", hash = "sha256:2bda44b43e7cacb15d4e05ff3cc1f8bc97936cc464623424102bfc2c35e95912"},
     {file = "Flask_SQLAlchemy-2.5.1-py2.py3-none-any.whl", hash = "sha256:f12c3d4cc5cc7fdcc148b9527ea05671718c3ea45d50c7e732cceb33f574b390"},
+]
+flask-threads = [
+    {file = "Flask-Threads-0.1.0.tar.gz", hash = "sha256:84df4e4d98f53d75aa403f52986d155db0319d0441ec7324259631bdcb512195"},
 ]
 gitdb = [
     {file = "gitdb-4.0.7-py3-none-any.whl", hash = "sha256:6c4cc71933456991da20917998acbe6cf4fb41eeaab7d6d67fbc05ecd4c865b0"},
@@ -1339,6 +1361,10 @@ sqlalchemy-stubs = [
 stevedore = [
     {file = "stevedore-3.4.0-py3-none-any.whl", hash = "sha256:920ce6259f0b2498aaa4545989536a27e4e4607b8318802d7ddc3a533d3d069e"},
     {file = "stevedore-3.4.0.tar.gz", hash = "sha256:59b58edb7f57b11897f150475e7bc0c39c5381f0b8e3fa9f5c20ce6c89ec4aa1"},
+]
+tinydb = [
+    {file = "tinydb-4.5.2-py3-none-any.whl", hash = "sha256:3c5e5c72c98db07e707be4e25f9e135a8a14b96938e4745b1b7187fec523ff58"},
+    {file = "tinydb-4.5.2.tar.gz", hash = "sha256:7d18b2d0217827c188f177cd23df60e5cd5316a717e836a8e21c8c2488262cf5"},
 ]
 toml = [
     {file = "toml-0.10.2-py2.py3-none-any.whl", hash = "sha256:806143ae5bfb6a3c6e736a764057db0e6a0e05e338b5630894a5f779cabb4f9b"},
