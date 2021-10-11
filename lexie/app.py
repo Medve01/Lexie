@@ -30,8 +30,8 @@ def check_and_fire_trigger(event_type, device_id):
         if triggers != []:
             for trigger_ in triggers:
                 trigger = Trigger(trigger_['id'])
-                AppContextThread(target=trigger.fire)
-                trigger.fire()
+                routine_thread = AppContextThread(target=trigger.fire)
+                routine_thread.start()
 
 def event_listener_cancel():
     """ stops thread loop """
