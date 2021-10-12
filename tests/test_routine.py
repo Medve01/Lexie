@@ -6,7 +6,7 @@ import pytest
 from tests.fixtures.test_flask_app import MOCK_CALLED, app, routines_db
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from lexie.smarthome.LexieDevice import LexieDevice
-from lexie.smarthome.Routine import Trigger, TriggerTimer, TriggerType, Step, StepType, DeviceAction, InvalidParametersException, CannotDeleteException, NextStepAlreadyDefinedException, DeviceEvent
+from lexie.smarthome.Routine import Trigger, TriggerTimer, TriggerType, Step, StepType, DeviceAction, InvalidParametersException, CannotDeleteException, NextStepAlreadyDefinedException, DeviceEvent, delete_from_db
 from lexie.smarthome.exceptions import NotFoundException
 from lexie.app import check_and_fire_trigger
 
@@ -29,9 +29,10 @@ def test_trigger_timer_CRD(monkeypatch, app, routines_db):
         timer = TriggerTimer.new()
         timer.add_schedule(1, 1, 1)
         trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.Timer, timer = timer)
-    trigger_id = trigger.id
-    with app.app_context():
+        assert app.apscheduler.get_job('trigger_' + trigger.id)
+        trigger_id = trigger.id
         trigger.delete()
+        assert app.apscheduler.get_job('trigger' + trigger_id) is None
         with pytest.raises(NotFoundException):
             trigger = Trigger(trigger_id)
 
@@ -39,6 +40,16 @@ def test_trigger_notfound(app, routines_db):
     with app.app_context():
         with pytest.raises(NotFoundException):
             trigger = Trigger('666666')
+
+def test_trigger_invalidparams(monkeypatch, app, routines_db):
+    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    with app.app_context():
+        timer = TriggerTimer.new()
+        with pytest.raises(InvalidParametersException):
+            trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, timer=timer)
+        device = LexieDevice('1234')
+        with pytest.raises(InvalidParametersException):
+            trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.Timer, device=device)
 
 def test_step_deviceaction_CRD(monkeypatch, app, routines_db):
     monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
@@ -386,14 +397,15 @@ def test_trigger_fire_delay(monkeypatch, app, routines_db):
     )
 )
 def test_check_and_fire_trigger(monkeypatch, app, routines_db, event):
-    def mock_trigger_fire(self):
+    def mock_thread_start(self):
         global MOCK_CALLED
-        MOCK_CALLED='mock_trigger_fire_' + self.id
+        MOCK_CALLED = 'mock_thread_start'
+    monkeypatch.setattr('threading.Thread.start', mock_thread_start)
     monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.fire', mock_trigger_fire)
     with app.app_context():
         trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, device=LexieDevice('1234'), event=event)
         global MOCK_CALLED
         MOCK_CALLED=''
         check_and_fire_trigger(event_type=event, device_id='1234')
-    assert MOCK_CALLED=='mock_trigger_fire_' + trigger.id
+    assert MOCK_CALLED == 'mock_thread_start'
+    # assert MOCK_CALLED=='mock_trigger_fire_' + trigger.id

@@ -4,6 +4,7 @@ import tinydb  # pylint: disable=import-error
 from flask import current_app
 from shortuuid import uuid
 
+from lexie.extensions import scheduler
 from lexie.smarthome.exceptions import NotFoundException
 from lexie.smarthome.LexieDevice import LexieDevice
 
@@ -282,18 +283,29 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
                 'enabled': enabled,
                 'timer': timer.id
             }
-        else:
-            if device is None or event is None:
-                raise InvalidParametersException
-            trigger_dict = {
-                'id': trigger_id,
-                'name': name,
-                'type': TriggerType.DeviceEvent,
-                'device_id': device.device_id,
-                'event': event,
-                'next_step': None,
-                'enabled': enabled
-            }
+            push_to_db('trigger', trigger_dict)
+            trigger = Trigger(trigger_id)
+            for ttimer in trigger.timer.schedules:
+                scheduler.add_job(
+                    id='trigger_' + trigger_id,
+                    func=trigger.fire,
+                    trigger='cron',
+                    day_of_week=ttimer['day_of_week'],
+                    hour=ttimer['hour'],
+                    minute=ttimer['minute']
+                )
+            return trigger
+        if device is None or event is None:
+            raise InvalidParametersException
+        trigger_dict = {
+            'id': trigger_id,
+            'name': name,
+            'type': TriggerType.DeviceEvent,
+            'device_id': device.device_id,
+            'event': event,
+            'next_step': None,
+            'enabled': enabled
+        }
         push_to_db('trigger', trigger_dict)
         return Trigger(trigger_id)
 
@@ -308,6 +320,8 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
                     current.delete()
                     temp_trigger = Trigger(self.id)
                     current = temp_trigger.last_in_chain()
+        if self.type == TriggerType.Timer:
+            scheduler.remove_job('trigger_' + self.id)
         delete_from_db('trigger', self.id)
 
     def add_next(self, next_step: Step):

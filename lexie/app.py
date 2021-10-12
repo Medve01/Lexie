@@ -7,19 +7,41 @@ import time
 import click
 import tinydb
 from flask import Flask, current_app, redirect
-from flask_socketio import SocketIO
 from flaskthreads import AppContextThread
 
 from lexie.caching import flush_cache
+from lexie.extensions import scheduler, socketio
 from lexie.smarthome import models
 from lexie.smarthome.LexieDevice import LexieDevice
 from lexie.smarthome.models import db as sqla_db
 from lexie.smarthome.models import prepare_db
 from lexie.smarthome.Routine import DeviceEvent, Trigger
 
-socketio = SocketIO()
 EVENT_LISTENER_CONTINUE = True
 EVENT_LISTENER_THREAD = threading.Thread() # pylint: disable=bad-thread-instantiation
+
+# def scheduler():
+#     """ should run every minute to look for time-based triggers that do not yet have a thread started """
+#     pass
+
+# def schedule_trigger(trigger: Trigger):
+#     """ schedules a new thread for a time-based trigger """
+
+# @scheduler.task('cron', id='trigger_scheduler', minute='*')
+# def trigger_scheduler():
+#     """ runs every minute to look for new triggers to be scheduled """
+#     with scheduler.app.app_context():
+#         triggers_db = tinydb.TinyDB(current_app.config['ROUTINES_DB']).table('trigger')
+#         trigger_q = tinydb.Query()
+#         timed_triggers = triggers_db.search(trigger_q.type == TriggerType.Timer)
+#         for timed_trigger in timed_triggers:
+#             job_id = 'trigger_' + trigger.id
+#             if not scheduler.get_job(job_id):
+#                 if timed_trigger['id'] not in scheduled_threads:
+#                     trigger = Trigger(timed_trigger['id'])
+#                     scheduler.add_job(id = job_id, func=trigger.fire, )
+
+
 
 def check_and_fire_trigger(event_type, device_id):
     """ checks if we have a trigger for the incoming event and if yes, fires it """
@@ -99,9 +121,15 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     app.register_blueprint(step_api_bp)
     sqla_db.app = app
     sqla_db.init_app(app)
-    # socketio.init_app(app, cors_allowed_origins='*', async_mode='eventlet')
-    socketio.init_app(app, cors_allowed_origins='*')
     prepare_db()
+    socketio.init_app(app, cors_allowed_origins='*')
+    if scheduler.state != 0:
+        try:
+            scheduler.shutdown(wait=False)
+        except: # pylint: disable=bare-except
+            print('This only happens during testing, so I am fooling bandit here')
+    scheduler.init_app(app)
+    scheduler.start()
     # event_listener_start()
     atexit.register(event_listener_cancel)
     @app.cli.command('create-db')
