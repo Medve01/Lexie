@@ -11,12 +11,6 @@
     "LEXIE_URL": "http://127.0.0.1",
     "ROUTINES_DB": "routines_db.json",
     "SCHEDULER_API_ENABLED = True": true,
-    "SCHEDULER_JOBSTORES": {
-        "apscheduler.jobstores.default": {
-            "type": "sqlalchemy",
-            "url": "sqlite:///lexie_jobs.db"
-        }
-    },
     "SCHEDULER_EXECUTORS": {
         "apscheduler.executors.default": {
             "class": "apscheduler.executors.pool:ThreadPoolExecutor",

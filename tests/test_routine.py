@@ -6,9 +6,10 @@ import pytest
 from tests.fixtures.test_flask_app import MOCK_CALLED, app, routines_db
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from lexie.smarthome.LexieDevice import LexieDevice
-from lexie.smarthome.Routine import Trigger, TriggerTimer, TriggerType, Step, StepType, DeviceAction, InvalidParametersException, CannotDeleteException, NextStepAlreadyDefinedException, DeviceEvent, delete_from_db
+from lexie.smarthome.Routine import Trigger, TriggerTimer, TriggerType, Step, StepType, DeviceAction, InvalidParametersException, CannotDeleteException, NextStepAlreadyDefinedException, DeviceEvent, delete_from_db, fire_trigger, schedule_all_timers
 from lexie.smarthome.exceptions import NotFoundException
 from lexie.app import check_and_fire_trigger
+from lexie.extensions import scheduler
 
 MOCK_CALLED=''
 
@@ -29,10 +30,10 @@ def test_trigger_timer_CRD(monkeypatch, app, routines_db):
         timer = TriggerTimer.new()
         timer.add_schedule(1, 1, 1)
         trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.Timer, timer = timer)
-        assert app.apscheduler.get_job('trigger_' + trigger.id)
+        assert app.apscheduler.get_job('trigger_' + trigger.id + '1')
         trigger_id = trigger.id
         trigger.delete()
-        assert app.apscheduler.get_job('trigger' + trigger_id) is None
+        assert app.apscheduler.get_job('trigger' + trigger_id + '1') is None
         with pytest.raises(NotFoundException):
             trigger = Trigger(trigger_id)
 
@@ -374,6 +375,21 @@ def test_trigger_fire_deviceaction(monkeypatch, app, routines_db, command, resul
         trigger.fire()
     assert MOCK_CALLED==result
 
+def test_fire_trigger(monkeypatch, app):
+    def mock_trigger_fire(self):
+        global MOCK_CALLED
+        MOCK_CALLED='mock_trigger_fire'
+    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.fire', mock_trigger_fire)
+    with app.app_context():
+        timer = TriggerTimer.new()
+        trigger = Trigger.new(
+            name='Test trigger',
+            trigger_type=TriggerType.Timer,
+            timer=timer
+        )
+        fire_trigger(trigger.id)
+    assert MOCK_CALLED == 'mock_trigger_fire'
+
 def test_trigger_fire_delay(monkeypatch, app, routines_db):
     def mock_sleep(delay):
         global MOCK_CALLED
@@ -409,3 +425,24 @@ def test_check_and_fire_trigger(monkeypatch, app, routines_db, event):
         check_and_fire_trigger(event_type=event, device_id='1234')
     assert MOCK_CALLED == 'mock_thread_start'
     # assert MOCK_CALLED=='mock_trigger_fire_' + trigger.id
+
+def test_schedule_all_timers(monkeypatch, app):
+    with app.app_context():
+        timer = TriggerTimer.new()
+        timer.add_schedule(hour=1, minute=1)
+        Trigger.new(
+            name= 'test1',
+            trigger_type=TriggerType.Timer,
+            timer=timer
+        )
+        timer = TriggerTimer.new()
+        timer.add_schedule(hour=1, minute=1, day_of_week=7)
+        Trigger.new(
+            name= 'test2',
+            trigger_type=TriggerType.Timer,
+            timer=timer
+        )
+        config = scheduler._scheduler._jobstores
+        scheduler.remove_all_jobs()
+        schedule_all_timers()
+        assert len(scheduler.get_jobs()) == 2

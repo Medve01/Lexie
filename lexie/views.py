@@ -11,7 +11,7 @@ from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices_with_rooms)
 from lexie.smarthome.Room import Room
 from lexie.smarthome.Routine import (DeviceAction, DeviceEvent, Step, StepType,
-                                     Trigger, TriggerType)
+                                     Trigger, TriggerTimer, TriggerType)
 
 # Register blueprint
 ui_bp = Blueprint('ui', __name__, url_prefix='/ui')
@@ -54,11 +54,44 @@ def move_device():
 @ui_bp.route('/add-trigger', methods=['POST'])
 def add_trigger():
     """ post target for New routine page """
-    trigger = Trigger.new(
-        trigger_type = TriggerType._as_dict[request.form.get('trigger_type')], # pylint: disable=protected-access
-        name=request.form.get('routine_name'),
-        device = LexieDevice(request.form.get('device')),
-        event = DeviceEvent._as_dict[request.form.get('event')]) # pylint: disable=protected-access
+    form_trigger_type = request.form.get('trigger_type')
+    if form_trigger_type == 'DeviceEvent':
+        trigger = Trigger.new(
+            trigger_type = TriggerType.DeviceEvent, # pylint: disable=protected-access
+            name=request.form.get('routine_name'),
+            device = LexieDevice(request.form.get('device')),
+            event = DeviceEvent._as_dict[request.form.get('event')]) # pylint: disable=protected-access
+    elif form_trigger_type == 'Timer':
+        days_of_week = []
+        if request.form.get('monday') == '1':
+            days_of_week.append(1)
+        if request.form.get('tuesday') == '1':
+            days_of_week.append(2)
+        if request.form.get('wednesday') == '1':
+            days_of_week.append(3)
+        if request.form.get('thursday') == '1':
+            days_of_week.append(4)
+        if request.form.get('friday') == '1':
+            days_of_week.append(5)
+        if request.form.get('saturday') == '1':
+            days_of_week.append(6)
+        if request.form.get('sunday') == '1':
+            days_of_week.append(7)
+
+        hour = request.form.get('selectTime').split(':')[0]
+        minute = request.form.get('selectTime').split(':')[1]
+        timer = TriggerTimer.new()
+        if len(days_of_week) == 0:
+            timer.add_schedule(hour=hour, minute=minute)
+        else:
+            for day_of_week in days_of_week:
+                timer.add_schedule(day_of_week=day_of_week, hour=hour, minute=minute)
+        trigger = Trigger.new(
+            name=request.form.get('routine_name'),
+            trigger_type=TriggerType.Timer,
+            timer=timer
+        )
+
     return redirect('/ui/edit-routine/' + trigger.id)
 
 @ui_bp.route('edit-routine/<trigger_id>', methods=['GET'])

@@ -115,7 +115,7 @@ def test_add_routine_get(monkeypatch, client, routines_db):
     result = client.get('/ui/add-routine')
     assert result.status_code == 200
 
-def test_add_routine_post(monkeypatch, client, app, routines_db):
+def test_add_routine_post_deviceevent(monkeypatch, client, app, routines_db):
     monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
     monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
     result = client.post('/ui/add-trigger', data={
@@ -128,6 +128,59 @@ def test_add_routine_post(monkeypatch, client, app, routines_db):
     with app.app_context():
         trigger_id = result.location.split('/')[-1]
         trigger = Trigger(trigger_id)
+
+def test_add_routine_post_timer_alldays(monkeypatch, client, app, routines_db):
+    result = client.post('/ui/add-trigger', data={
+        'trigger_type': 'Timer',
+        'routine_name': 'Test routine',
+        'selectTime': '13:00'
+    })
+    assert result.status_code == 302
+    with app.app_context():
+        trigger_id = result.location.split('/')[-1]
+        trigger = Trigger(trigger_id)
+
+@pytest.mark.parametrize("day", (
+    [
+        ('monday'),
+        ('tuesday'),
+        ('wednesday'),
+        ('thursday'),
+        ('friday'),
+        ('saturday'),
+        ('sunday'),
+    ]
+))
+def test_add_routine_post_timer_days(client, app, day):
+    result = client.post('/ui/add-trigger', data={
+        'trigger_type': 'Timer',
+        'routine_name': 'Test routine',
+        day: '1',
+        'selectTime': '13:00'
+    })
+    assert result.status_code == 302
+    with app.app_context():
+        trigger_id = result.location.split('/')[-1]
+        trigger = Trigger(trigger_id)
+        assert len(trigger.timer.schedules) == 1
+
+def test_add_routine_post_timer_multiple_days(client, app):
+    result = client.post('/ui/add-trigger', data={
+        'trigger_type': 'Timer',
+        'routine_name': 'Test routine',
+        'monday': '1',
+        'tuesday': '1',
+        'wednesday': '1',
+        'thursday': '1',
+        'friday': '1',
+        'sunday': '1',
+        'selectTime': '13:00'
+    })
+    assert result.status_code == 302
+    with app.app_context():
+        trigger_id = result.location.split('/')[-1]
+        trigger = Trigger(trigger_id)
+        assert len(trigger.timer.schedules) == 6
 
 def test_edit_routine_get(monkeypatch, client, app, routines_db):
     monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
