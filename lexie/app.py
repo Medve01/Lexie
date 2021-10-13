@@ -7,17 +7,16 @@ import time
 import click
 import tinydb
 from flask import Flask, current_app, redirect
-from flask_socketio import SocketIO
 from flaskthreads import AppContextThread
 
 from lexie.caching import flush_cache
+from lexie.extensions import scheduler, socketio
 from lexie.smarthome import models
 from lexie.smarthome.LexieDevice import LexieDevice
 from lexie.smarthome.models import db as sqla_db
 from lexie.smarthome.models import prepare_db
 from lexie.smarthome.Routine import DeviceEvent, Trigger
 
-socketio = SocketIO()
 EVENT_LISTENER_CONTINUE = True
 EVENT_LISTENER_THREAD = threading.Thread() # pylint: disable=bad-thread-instantiation
 
@@ -30,7 +29,8 @@ def check_and_fire_trigger(event_type, device_id):
         if triggers != []:
             for trigger_ in triggers:
                 trigger = Trigger(trigger_['id'])
-                trigger.fire()
+                routine_thread = AppContextThread(target=trigger.fire)
+                routine_thread.start()
 
 def event_listener_cancel():
     """ stops thread loop """
@@ -98,10 +98,15 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     app.register_blueprint(step_api_bp)
     sqla_db.app = app
     sqla_db.init_app(app)
-    # socketio.init_app(app, cors_allowed_origins='*', async_mode='eventlet')
-    socketio.init_app(app, cors_allowed_origins='*')
     prepare_db()
-    # event_listener_start()
+    socketio.init_app(app, cors_allowed_origins='*')
+    if scheduler.state != 0:
+        try:
+            scheduler.shutdown(wait=False)
+        except: # pylint: disable=bare-except
+            print('This only happens during testing, so I am fooling bandit here')
+    scheduler.init_app(app)
+    scheduler.start()
     atexit.register(event_listener_cancel)
     @app.cli.command('create-db')
     def create_db_command(): # pragma: nocover

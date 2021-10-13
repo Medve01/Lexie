@@ -22,7 +22,34 @@
 									<div class="form-group">
 										<label for="trigger_sum">IF</label>
 										<div id="trigger_sum">
-											{{trigger.device.room.name}} - {{trigger.device.device_name}} {{trigger.event}}<br/>
+											{% if trigger.type == 'device_event' %}
+												{{trigger.device.room.name}} - {{trigger.device.device_name}} {{trigger.event}}
+											{% endif %}
+											{% if trigger.type == 'timer' %}
+												{% for schedule in trigger.timer.schedules %}
+													{% if schedule['day_of_week'] == '*' %}
+														Every day
+													{% else %}
+														{%if schedule['day_of_week'] == 1 %}
+															Monday
+														{% elif schedule['day_of_week'] == 2 %}
+															Tuesday
+														{% elif schedule['day_of_week'] == 2 %}
+															Wednesday
+														{% elif schedule['day_of_week'] == 2 %}
+															Thursday
+														{% elif schedule['day_of_week'] == 2 %}
+															Friday
+														{% elif schedule['day_of_week'] == 2 %}
+															Saturday
+														{% elif schedule['day_of_week'] == 2 %}
+															Sunday
+														{% endif %}
+													{% endif %}
+												{% endfor %}
+												at {{ trigger.timer.schedules[0]['hour'] }}:{{trigger.timer.schedules[0]['minute']}}
+											{% endif %}
+											<br/>
 										</div>
 											{% for step in steps %}
 											<label for="step_{{step.id}}">THEN</label>

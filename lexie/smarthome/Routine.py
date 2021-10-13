@@ -1,9 +1,11 @@
 import time
 
+import apscheduler
 import tinydb  # pylint: disable=import-error
 from flask import current_app
 from shortuuid import uuid
 
+from lexie.extensions import scheduler
 from lexie.smarthome.exceptions import NotFoundException
 from lexie.smarthome.LexieDevice import LexieDevice
 
@@ -16,6 +18,32 @@ class CannotDeleteException(Exception):
 
 class NextStepAlreadyDefinedException(Exception):
     """ to be raised when attempting to call add_next() on a trigger or step that already has a next_step defined. """
+
+def schedule_all_timers():
+    """ parses through all triggers and adds a job for Timed ones.
+        to be ran on app start """
+    with scheduler.app.app_context():
+        triggers = Trigger.get_all()
+        for trigger in triggers:
+            if trigger.type == TriggerType.Timer:
+                for schedule in trigger.timer.schedules:
+                    if schedule['day_of_week'] == 7:
+                        schedule['day_of_week'] = 0
+                    scheduler.add_job(
+                        id='trigger_' + trigger.id + str(schedule['day_of_week']),
+                        func=fire_trigger,
+                        args=[trigger.id],
+                        trigger='cron',
+                        day_of_week=schedule['day_of_week'],
+                        hour=schedule['hour'],
+                        minute=schedule['minute']
+                    )
+
+def fire_trigger(trigger_id: str):
+    """ to be used with APscheduler. Instanciates the Trigger(trigger_id) and fires it. """
+    with scheduler.app.app_context():
+        trigger = Trigger(trigger_id)
+        trigger.fire()
 
 def push_to_db(table, value):
     """ stores dict in TinyDB. key is dict['id'] """
@@ -220,6 +248,36 @@ class TriggerType: # pylint: disable=too-few-public-methods
         'Timer': 'timer'
     }
 
+class TriggerTimer:
+    """ stores times when a Trigger with TriggerType.Timer should be fired """
+    def __init__(self, timer_id) -> None:
+        self.timer_dict = fetch_from_db('timer', timer_id)
+        self.id = timer_id # pylint: disable=invalid-name
+        self.schedules = self.timer_dict['schedules']
+
+    @staticmethod
+    def new():
+        """ creates a new, empty timer """
+        timer_id = uuid()
+        timer_dict = {
+            'id': timer_id,
+            'schedules': []
+        }
+        push_to_db('timer', timer_dict)
+        return TriggerTimer(timer_id)
+
+    def add_schedule(self, hour: int, minute: int, day_of_week: str = "*"):
+        """ adds one dow/hour/minute to the schedules """
+        self.schedules.append(
+            {
+                'day_of_week': day_of_week,
+                'hour': hour,
+                'minute': minute
+            }
+        )
+        self.timer_dict['schedules'] = self.schedules
+        update_in_db('timer', self.timer_dict)
+
 class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attributes
     """ the first object in a routine. A Trigger starts a series of steps
         A Trigger is an event of a LexieDevice """
@@ -227,24 +285,52 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
         self.trigger_dict = fetch_from_db('trigger', trigger_id)
         self.id = self.trigger_dict['id'] #pylint: disable=invalid-name
         self.type = self.trigger_dict['type']
-        self.device_id = self.trigger_dict['device_id']
-        self.device = LexieDevice(self.trigger_dict['device_id'])
-        self.event = self.trigger_dict['event']
         self.next_step = self.trigger_dict['next_step']
         self.name = self.trigger_dict['name']
         self.enabled = self.trigger_dict['enabled']
+        if self.type == TriggerType.DeviceEvent:
+            self.device_id = self.trigger_dict['device_id']
+            self.device = LexieDevice(self.trigger_dict['device_id'])
+            self.event = self.trigger_dict['event']
+        else:
+            self.timer = TriggerTimer(self.trigger_dict['timer'])
 
     @staticmethod
-    def new(trigger_type: str, device: LexieDevice, event: str, name: str, enabled: bool=True):
+    def new(name: str, trigger_type: str, device: LexieDevice = None, event: str = None, timer: TriggerTimer = None, enabled: bool=True): # pylint: disable=too-many-arguments
         """ Creates a new Trigger """
-        # Timer is not implemented yet at all.
-        if trigger_type == TriggerType.Timer:
-            raise NotImplementedError # pragma: nocover
         trigger_id = uuid()
+        if trigger_type == TriggerType.Timer:
+            if timer is None:
+                raise InvalidParametersException
+            trigger_dict = {
+                'id': trigger_id,
+                'name': name,
+                'type': TriggerType.Timer,
+                'next_step': None,
+                'enabled': enabled,
+                'timer': timer.id
+            }
+            push_to_db('trigger', trigger_dict)
+            trigger = Trigger(trigger_id)
+            for ttimer in trigger.timer.schedules:
+                if ttimer['day_of_week'] == 7:
+                    ttimer['day_of_week'] = 0
+                scheduler.add_job(
+                    id='trigger_' + trigger_id + str(ttimer['day_of_week']),
+                    func=fire_trigger,
+                    args=[trigger_id],
+                    trigger='cron',
+                    day_of_week=ttimer['day_of_week'],
+                    hour=ttimer['hour'],
+                    minute=ttimer['minute']
+                )
+            return trigger
+        if device is None or event is None:
+            raise InvalidParametersException
         trigger_dict = {
             'id': trigger_id,
             'name': name,
-            'type': 'DeviceEvent',
+            'type': TriggerType.DeviceEvent,
             'device_id': device.device_id,
             'event': event,
             'next_step': None,
@@ -264,6 +350,12 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
                     current.delete()
                     temp_trigger = Trigger(self.id)
                     current = temp_trigger.last_in_chain()
+        if self.type == TriggerType.Timer:
+            try:
+                for schedule in self.timer.schedules:
+                    scheduler.remove_job('trigger_' + self.id + str(schedule['day_of_week']))
+            except apscheduler.jobstores.base.JobLookupError: # pragma: nocover
+                pass
         delete_from_db('trigger', self.id)
 
     def add_next(self, next_step: Step):

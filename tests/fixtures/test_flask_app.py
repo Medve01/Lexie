@@ -1,4 +1,5 @@
 import json
+import os
 import tinydb
 import pytest
 
@@ -22,6 +23,9 @@ def app(monkeypatch):
     _app.config['ROUTINES_DB'] = '/tmp/routines_db.json'
     routines_db = tinydb.TinyDB(_app.config['ROUTINES_DB'])
     routines_db.truncate()
+    routines_db.table('trigger').truncate()
+    routines_db.table('event').truncate()
+    routines_db.table('timer').truncate()
     flush_cache()
     import lexie.smarthome.models as models
     models.db.create_all()

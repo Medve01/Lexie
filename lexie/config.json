@@ -9,5 +9,13 @@
         "events": "sqlite:////tmp/lexie_events.db"
     },
     "LEXIE_URL": "http://127.0.0.1",
-    "ROUTINES_DB": "routines_db.json"
+    "ROUTINES_DB": "routines_db.json",
+    "SCHEDULER_API_ENABLED = True": true,
+    "SCHEDULER_EXECUTORS": {
+        "apscheduler.executors.default": {
+            "class": "apscheduler.executors.pool:ThreadPoolExecutor",
+            "max_workers": "20"
+        }
+    },
+    "SCHEDULER_TIMEZONE": "Europe/Budapest"
 }
