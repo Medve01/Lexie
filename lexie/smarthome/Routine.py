@@ -1,5 +1,6 @@
 import time
 
+import apscheduler
 import tinydb  # pylint: disable=import-error
 from flask import current_app
 from shortuuid import uuid
@@ -17,6 +18,32 @@ class CannotDeleteException(Exception):
 
 class NextStepAlreadyDefinedException(Exception):
     """ to be raised when attempting to call add_next() on a trigger or step that already has a next_step defined. """
+
+def schedule_all_timers():
+    """ parses through all triggers and adds a job for Timed ones.
+        to be ran on app start """
+    with scheduler.app.app_context():
+        triggers = Trigger.get_all()
+        for trigger in triggers:
+            if trigger.type == TriggerType.Timer:
+                for schedule in trigger.timer.schedules:
+                    if schedule['day_of_week'] == 7:
+                        schedule['day_of_week'] = 0
+                    scheduler.add_job(
+                        id='trigger_' + trigger.id + str(schedule['day_of_week']),
+                        func=fire_trigger,
+                        args=[trigger.id],
+                        trigger='cron',
+                        day_of_week=schedule['day_of_week'],
+                        hour=schedule['hour'],
+                        minute=schedule['minute']
+                    )
+
+def fire_trigger(trigger_id: str):
+    """ to be used with APscheduler. Instanciates the Trigger(trigger_id) and fires it. """
+    with scheduler.app.app_context():
+        trigger = Trigger(trigger_id)
+        trigger.fire()
 
 def push_to_db(table, value):
     """ stores dict in TinyDB. key is dict['id'] """
@@ -239,7 +266,7 @@ class TriggerTimer:
         push_to_db('timer', timer_dict)
         return TriggerTimer(timer_id)
 
-    def add_schedule(self, day_of_week: int, hour: int, minute: int):
+    def add_schedule(self, hour: int, minute: int, day_of_week: str = "*"):
         """ adds one dow/hour/minute to the schedules """
         self.schedules.append(
             {
@@ -286,9 +313,12 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
             push_to_db('trigger', trigger_dict)
             trigger = Trigger(trigger_id)
             for ttimer in trigger.timer.schedules:
+                if ttimer['day_of_week'] == 7:
+                    ttimer['day_of_week'] = 0
                 scheduler.add_job(
-                    id='trigger_' + trigger_id,
-                    func=trigger.fire,
+                    id='trigger_' + trigger_id + str(ttimer['day_of_week']),
+                    func=fire_trigger,
+                    args=[trigger_id],
                     trigger='cron',
                     day_of_week=ttimer['day_of_week'],
                     hour=ttimer['hour'],
@@ -321,7 +351,11 @@ class Trigger: # pylint: disable=too-few-public-methods,too-many-instance-attrib
                     temp_trigger = Trigger(self.id)
                     current = temp_trigger.last_in_chain()
         if self.type == TriggerType.Timer:
-            scheduler.remove_job('trigger_' + self.id)
+            try:
+                for schedule in self.timer.schedules:
+                    scheduler.remove_job('trigger_' + self.id + str(schedule['day_of_week']))
+            except apscheduler.jobstores.base.JobLookupError: # pragma: nocover
+                pass
         delete_from_db('trigger', self.id)
 
     def add_next(self, next_step: Step):

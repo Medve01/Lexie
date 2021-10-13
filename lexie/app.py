@@ -20,29 +20,6 @@ from lexie.smarthome.Routine import DeviceEvent, Trigger
 EVENT_LISTENER_CONTINUE = True
 EVENT_LISTENER_THREAD = threading.Thread() # pylint: disable=bad-thread-instantiation
 
-# def scheduler():
-#     """ should run every minute to look for time-based triggers that do not yet have a thread started """
-#     pass
-
-# def schedule_trigger(trigger: Trigger):
-#     """ schedules a new thread for a time-based trigger """
-
-# @scheduler.task('cron', id='trigger_scheduler', minute='*')
-# def trigger_scheduler():
-#     """ runs every minute to look for new triggers to be scheduled """
-#     with scheduler.app.app_context():
-#         triggers_db = tinydb.TinyDB(current_app.config['ROUTINES_DB']).table('trigger')
-#         trigger_q = tinydb.Query()
-#         timed_triggers = triggers_db.search(trigger_q.type == TriggerType.Timer)
-#         for timed_trigger in timed_triggers:
-#             job_id = 'trigger_' + trigger.id
-#             if not scheduler.get_job(job_id):
-#                 if timed_trigger['id'] not in scheduled_threads:
-#                     trigger = Trigger(timed_trigger['id'])
-#                     scheduler.add_job(id = job_id, func=trigger.fire, )
-
-
-
 def check_and_fire_trigger(event_type, device_id):
     """ checks if we have a trigger for the incoming event and if yes, fires it """
     with current_app.app_context():
@@ -130,7 +107,6 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
             print('This only happens during testing, so I am fooling bandit here')
     scheduler.init_app(app)
     scheduler.start()
-    # event_listener_start()
     atexit.register(event_listener_cancel)
     @app.cli.command('create-db')
     def create_db_command(): # pragma: nocover
