@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime
 from typing import Any
 
 from flask_sqlalchemy import DefaultMeta, SQLAlchemy
@@ -9,6 +10,12 @@ from sqlalchemy.orm import relationship
 
 db = SQLAlchemy()
 BaseModel: DefaultMeta = db.Model
+
+class EventLog(BaseModel): #pylint: disable=too-few-public-methods # type: ignore
+    """ database logging """
+    id = db.Column(db.Integer, primary_key = True) # pylint: disable=invalid-name
+    event = db.Column(db.TEXT, nullable=False)
+    timestamp = db.Column(db.DateTime, nullable=False, default=datetime.now())
 
 class Event(BaseModel): #pylint: disable=too-few-public-methods # type: ignore
     """ represents an event in the database"""

@@ -5,8 +5,8 @@ import pytest
 
 from tests.fixtures.test_flask_app import MOCK_CALLED, app, routines_db
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
-from lexie.smarthome.LexieDevice import LexieDevice
-from lexie.smarthome.Routine import Trigger, TriggerTimer, TriggerType, Step, StepType, DeviceAction, InvalidParametersException, CannotDeleteException, NextStepAlreadyDefinedException, DeviceEvent, delete_from_db, fire_trigger, schedule_all_timers
+from lexie.smarthome.lexiedevice import LexieDevice
+from lexie.smarthome.routine import Trigger, TriggerTimer, TriggerType, Step, StepType, DeviceAction, InvalidParametersException, CannotDeleteException, NextStepAlreadyDefinedException, DeviceEvent, delete_from_db, fire_trigger, schedule_all_timers
 from lexie.smarthome.exceptions import NotFoundException
 from lexie.app import check_and_fire_trigger
 from lexie.extensions import scheduler
@@ -14,7 +14,7 @@ from lexie.extensions import scheduler
 MOCK_CALLED=''
 
 def test_trigger_deviceevent_CRD(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         device = LexieDevice('1234')
         trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, device=device, event=DeviceEvent.TurnedOn)
@@ -43,7 +43,7 @@ def test_trigger_notfound(app, routines_db):
             trigger = Trigger('666666')
 
 def test_trigger_invalidparams(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         timer = TriggerTimer.new()
         with pytest.raises(InvalidParametersException):
@@ -53,7 +53,7 @@ def test_trigger_invalidparams(monkeypatch, app, routines_db):
             trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.Timer, device=device)
 
 def test_step_deviceaction_CRD(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         device = LexieDevice('1234')
         step = Step.new(StepType.DeviceAction, device, DeviceAction.TurnOn)
@@ -78,7 +78,7 @@ def test_step_delay_CRD(monkeypatch, app, routines_db):
             step = Step(step_id)
 
 def test_step_delete_with_parent(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='Test trigger',
@@ -109,7 +109,7 @@ def test_step_notfound(app, routines_db):
             step = Step('666666')
 
 def test_delete_trigger_with_next(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         device = LexieDevice('1234')
         trigger = Trigger.new(
@@ -148,7 +148,7 @@ def test_delete_next_step(app, routines_db):
         assert first_step.next_step is None
 
 def test_delete_middle_step_with_trigger_parent(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='Test trigger',
@@ -171,7 +171,7 @@ def test_delete_middle_step_with_trigger_parent(monkeypatch, app, routines_db):
         assert trigger.next_step == second_step.id
 
 def test_delete_middle_step_with_step_parent(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         first_step = Step.new(
             step_type=StepType.Delay,
@@ -201,7 +201,7 @@ def test_step_double_next(app, routines_db):
             first_step.add_next(third_step)
 
 def test_trigger_double_next(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         first_step = Step.new(step_type=StepType.Delay, delay_duration=1)
         second_step = Step.new(step_type=StepType.Delay, delay_duration=1)
@@ -215,7 +215,7 @@ def test_trigger_double_next(monkeypatch, app, routines_db):
             trigger.add_next(second_step)
 
 def test_trigger_get_all(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         triggers = []
         triggers.append(
@@ -252,7 +252,7 @@ def test_trigger_get_all(monkeypatch, app, routines_db):
         )
 
 def test_trigger_last_in_chain(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='test1',
@@ -274,7 +274,7 @@ def test_trigger_last_in_chain(monkeypatch, app, routines_db):
         assert last.id == step2.id
 
 def test_trigger_chain_to_list(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='test1',
@@ -296,7 +296,7 @@ def test_trigger_chain_to_list(monkeypatch, app, routines_db):
         assert len(result)==2
 
 def test_trigger_chain_to_list_no_steps(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='test1',
@@ -307,7 +307,7 @@ def test_trigger_chain_to_list_no_steps(monkeypatch, app, routines_db):
         assert trigger.chain_to_list() == []
 
 def test_trigger_last_in_chain_no_steps(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='test1',
@@ -318,7 +318,7 @@ def test_trigger_last_in_chain_no_steps(monkeypatch, app, routines_db):
         assert trigger.last_in_chain() == trigger
 
 def test_trigger_disable_enable(monkeypatch, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='test1',
@@ -365,9 +365,9 @@ def mock_device_toggle(self):
         )
 )
 def test_trigger_fire_deviceaction(monkeypatch, app, routines_db, command, result):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_turn', mock_device_turn)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_device_toggle)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.action_turn', mock_device_turn)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.action_toggle', mock_device_toggle)
     with app.app_context():
         trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, device=LexieDevice('1234'), event=DeviceEvent.TurnedOn)
         step = Step.new(step_type=StepType.DeviceAction, device=LexieDevice('4321'), device_action=command)
@@ -379,7 +379,7 @@ def test_fire_trigger(monkeypatch, app):
     def mock_trigger_fire(self):
         global MOCK_CALLED
         MOCK_CALLED='mock_trigger_fire'
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.fire', mock_trigger_fire)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.fire', mock_trigger_fire)
     with app.app_context():
         timer = TriggerTimer.new()
         trigger = Trigger.new(
@@ -394,9 +394,9 @@ def test_trigger_fire_delay(monkeypatch, app, routines_db):
     def mock_sleep(delay):
         global MOCK_CALLED
         MOCK_CALLED='mock_sleep'
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_turn', mock_device_turn)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_device_toggle)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.action_turn', mock_device_turn)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.action_toggle', mock_device_toggle)
     monkeypatch.setattr('time.sleep', mock_sleep)
     with app.app_context():
         trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, device=LexieDevice('1234'), event=DeviceEvent.TurnedOn)
@@ -417,7 +417,7 @@ def test_check_and_fire_trigger(monkeypatch, app, routines_db, event):
         global MOCK_CALLED
         MOCK_CALLED = 'mock_thread_start'
     monkeypatch.setattr('threading.Thread.start', mock_thread_start)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     with app.app_context():
         trigger = Trigger.new(name='Test trigger', trigger_type=TriggerType.DeviceEvent, device=LexieDevice('1234'), event=event)
         global MOCK_CALLED

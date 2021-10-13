@@ -87,10 +87,10 @@ def test_event_hook(monkeypatch, client, event, status, results):
     #             'online': True,
     #             'ison': False
     #         }
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     monkeypatch.setattr('lexie.events.send_event', mock_send_event)
-    # monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.set_status', mock_set_status)
-    # monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.get_status', mock_get_status)
+    # monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.set_status', mock_set_status)
+    # monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.get_status', mock_get_status)
     res = client.get('/events/1234/' + event)
     assert res.status_code == status
     assert MOCK_CALL == results
@@ -98,7 +98,7 @@ def test_event_hook(monkeypatch, client, event, status, results):
 def test_event_hook_nodevice(monkeypatch, client):
     def mocklexiedevice_init(self, device_id):
         raise NotFoundException
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mocklexiedevice_init)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', mocklexiedevice_init)
 
     res = client.get('events/6666/on')
     assert res.status_code == 404
@@ -128,9 +128,9 @@ def test_event_listener(app, monkeypatch, onoff, result):
             'status_value': value
         }
         return
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
     monkeypatch.setattr('lexie.app.socketio.emit', mock_socketio_emit)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.set_status', mock_set_status)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.set_status', mock_set_status)
     # put an event in DB
     global MOCK_SIO_CALL, MOCK_CALL
     MOCK_SIO_CALL = {}

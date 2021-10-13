@@ -3,7 +3,7 @@ from typing import Any
 
 import pytest
 
-from lexie.smarthome.LexieDevice import LexieDevice, LexieDeviceType
+from lexie.smarthome.lexiedevice import LexieDevice, LexieDeviceType
 from lexie.smarthome import exceptions
 from tests.fixtures.test_flask_app import app, client
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
@@ -18,8 +18,8 @@ def test_api_get_device(monkeypatch, client):
     def mocklexiedevice_to_dict(Any):
         mock_device = MockLexieDevice('1234')
         return mock_device.to_dict()
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.to_dict', mocklexiedevice_to_dict)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.to_dict', mocklexiedevice_to_dict)
     res = client.get('/api/device/1234')
 
     assert json.loads(res.data) == {
@@ -48,8 +48,8 @@ def test_api_get_device_nonexisting(monkeypatch, client):
     def mocklexiedevice_to_dict(Any):
         mock_device = MockLexieDevice('1234')
         return mock_device.to_dict()
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mocklexiedevice_init)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.to_dict', mocklexiedevice_to_dict)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', mocklexiedevice_init)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.to_dict', mocklexiedevice_to_dict)
     res = client.get('/api/device/1234')
     assert res.status_code == 404
 
@@ -73,8 +73,8 @@ def test_api_device_relay_actions(monkeypatch, client, onoff, results): #pylint:
         return mock_device.action_toggle()
 
 
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_turn', mock_action_turn)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_action_toggle)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.action_turn', mock_action_turn)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.action_toggle', mock_action_toggle)
     res = client.get('/api/device/1234/' + onoff)
     assert json.loads(res.data) == results
 
@@ -90,9 +90,9 @@ def test_api_device_relay_actions_nonexisting_device(monkeypatch, client): #pyli
     def mocklexiedevice_init(Any, device_id):
         raise exceptions.NotFoundException
 
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mocklexiedevice_init)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_turn', mock_action_turn)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.action_toggle', mock_action_toggle)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', mocklexiedevice_init)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.action_turn', mock_action_turn)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.action_toggle', mock_action_toggle)
     res = client.get('/api/device/1234/toggle')
     assert res.status_code == 404
 
@@ -118,8 +118,8 @@ def test_api_new_device(monkeypatch, client):
 
     # def mock_lexiedevice_init(device_id):
     #     return MockLexieDevice(device_id=device_id)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.new', new_lexiedevice)
-    # monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mock_lexiedevice_init)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.new', new_lexiedevice)
+    # monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', mock_lexiedevice_init)
     res = client.put('/api/device/', data=json.dumps(device_data))
     assert json.loads(res.data) == {
                                         "device_attributes": {
@@ -143,8 +143,8 @@ def test_api_get_all_devices(monkeypatch, client):
         all_devices.append(MockLexieDevice('1234'))
         all_devices.append(MockLexieDevice('4321'))
         return all_devices
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.get_all_devices', mock_get_all_devices)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.get_all_devices', mock_get_all_devices)
     res = client.get('/api/device/')
     assert json.loads(res.data) == [
         {'device_attributes': {'ip_address': '127.0.0.1'},
@@ -177,8 +177,8 @@ def test_api_get_all_devices_with_rooms(monkeypatch, client):
             ]}
         ]
         return all_devices
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.get_all_devices', mock_get_all_devices_with_rooms)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.get_all_devices', mock_get_all_devices_with_rooms)
     res = client.get('/api/device/?groupby=rooms')
     assert json.loads(res.data) == [
         {'room_devices': [], 'room_name': 'Test room 1', 'room_id': '1234', 'room_visible': True},
@@ -214,9 +214,9 @@ def test_api_setup_events(monkeypatch, client):
         MOCK_CALLED = "mock_setup_events"
         return True
     global MOCK_CALLED
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.setup_events', mock_setup_events)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.supports_events', lambda self : True)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.setup_events', mock_setup_events)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.supports_events', lambda self : True)
     res = client.get('/api/device/1234/setup-events')
     assert json.loads(res.data) == {
         "Result": "Success"
@@ -235,9 +235,9 @@ def test_api_setup_events_unsupported(monkeypatch, client):
         MOCK_CALLED = "mock_setup_events_unsupported"
         return True
     global MOCK_CALLED
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.setup_events', mock_setup_events)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.supports_events', mock_supports_events)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.setup_events', mock_setup_events)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.supports_events', mock_supports_events)
     res = client.get('/api/device/1234/setup-events')
     assert json.loads(res.data) == {
         "Error:": "Invalid command"
@@ -251,8 +251,8 @@ def test_api_device_delete(monkeypatch, client):
         MOCK_CALLED = True
         return
 
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.delete', mock_device_delete)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.delete', mock_device_delete)
     global MOCK_CALLED
     MOCK_CALLED = False
     result = client.delete('/api/device/1234')
@@ -263,8 +263,8 @@ def test_api_device_delete_nonexisting(monkeypatch, client):
     def mock_device_delete(self, device_id):
         raise exceptions.NotFoundException
 
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', mock_device_delete)
-    # monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.delete', mock_device_delete)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', mock_device_delete)
+    # monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.delete', mock_device_delete)
     result = client.delete('/api/device/1234')
     assert result.status_code ==404
 

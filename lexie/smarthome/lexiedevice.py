@@ -6,8 +6,8 @@ from shortuuid import uuid  # type: ignore # pylint:disable=import-error
 
 from lexie.caching import get_value_from_cache, set_value_in_cache
 from lexie.smarthome import exceptions, models
-from lexie.smarthome.ILexieDevice import ILexieDevice
-from lexie.smarthome.Room import Room
+from lexie.smarthome.ilexiedevice import ILexieDevice
+from lexie.smarthome.room import Room
 
 
 class LexieDeviceType: #pylint: disable=too-few-public-methods

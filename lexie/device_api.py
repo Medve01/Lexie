@@ -5,7 +5,7 @@ from flask.json import jsonify
 
 from lexie.smarthome import exceptions
 from lexie.smarthome.exceptions import NotFoundException
-from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
+from lexie.smarthome.lexiedevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices,
                                          get_all_devices_with_rooms)
 

@@ -2,11 +2,11 @@ import json
 
 import pytest
 
-from lexie.smarthome.LexieDevice import LexieDevice, LexieDeviceType
+from lexie.smarthome.lexiedevice import LexieDevice, LexieDeviceType
 from lexie.smarthome import exceptions
 from tests.fixtures.test_flask_app import app, client
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
-from lexie.smarthome.Routine import StepType, TriggerType, DeviceEvent
+from lexie.smarthome.routine import StepType, TriggerType, DeviceEvent
 from lexie.smarthome.exceptions import NotFoundException
 
 MOCK_CALLED = ''
@@ -60,52 +60,52 @@ class MockStep:
         MOCK_CALLED = 'MockStep.delete'
 
 def test_step_delete(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Step.__init__', MockStep.__init__)
-    monkeypatch.setattr('lexie.smarthome.Routine.Step.delete', MockStep.delete)
+    monkeypatch.setattr('lexie.smarthome.routine.Step.__init__', MockStep.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Step.delete', MockStep.delete)
     result = client.delete('/api/step/1234')
     assert result.status_code == 200
 
 def test_step_get(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Step.__init__', MockStep.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Step.__init__', MockStep.__init__)
     result = client.get('/api/step/1234')
     assert result.status_code == 200
 
 def test_step_delete_nonexisting(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Step.__init__', MockStep.__init__)
-    monkeypatch.setattr('lexie.smarthome.Routine.Step.delete', MockStep.delete)
+    monkeypatch.setattr('lexie.smarthome.routine.Step.__init__', MockStep.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Step.delete', MockStep.delete)
     result = client.delete('/api/step/VOID')
     assert result.status_code == 404
 
 def test_step_get_nonexisting(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Step.__init__', MockStep.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Step.__init__', MockStep.__init__)
     result = client.get('/api/step/VOID')
     assert result.status_code == 404
 
 def test_trigger_delete(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.__init__', MockTrigger.__init__)
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.delete', MockTrigger.delete)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.__init__', MockTrigger.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.delete', MockTrigger.delete)
     result = client.delete('/api/trigger/1234')
     assert result.status_code == 200
 
 def test_trigger_get(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.__init__', MockTrigger.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.__init__', MockTrigger.__init__)
     result = client.get('/api/trigger/1234')
     assert result.status_code == 200
 
 def test_trigger_delete_nonexisting(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.__init__', MockTrigger.__init__)
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.delete', MockTrigger.delete)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.__init__', MockTrigger.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.delete', MockTrigger.delete)
     result = client.delete('/api/trigger/VOID')
     assert result.status_code == 404
 
 def test_trigger_get_nonexisting(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.__init__', MockTrigger.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.__init__', MockTrigger.__init__)
     result = client.get('/api/trigger/VOID')
     assert result.status_code == 404
 
 def test_trigger_get_all(monkeypatch, app, client):
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.__init__', MockTrigger.__init__)
-    monkeypatch.setattr('lexie.smarthome.Routine.Trigger.get_all', MockTrigger.get_all)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.__init__', MockTrigger.__init__)
+    monkeypatch.setattr('lexie.smarthome.routine.Trigger.get_all', MockTrigger.get_all)
     result = client.get('/api/trigger/')
     assert result.status_code == 200
     assert len(json.loads(result.data)) == 2

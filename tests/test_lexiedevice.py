@@ -3,10 +3,10 @@ import json
 import pytest
 
 # from lexie.db import init__db
-from lexie.smarthome.LexieDevice import (LexieDevice, LexieDeviceType,
+from lexie.smarthome.lexiedevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices, get_all_devices_with_rooms)
 from lexie.smarthome.exceptions import NotFoundException
-from lexie.smarthome.Room import Room
+from lexie.smarthome.room import Room
 from tests.fixtures.test_flask_app import app
 from tests.fixtures.mock_lexieclasses import device_data
 
@@ -278,11 +278,11 @@ def test_device_set_status(monkeypatch, app, cache, result):
     global MOCK_CALL
     MOCK_CALL = {}
     # monkeypatch.setattr('lexie.caching.get_value_from_cache', mock_get_value_from_cache)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.get_value_from_cache', mock_get_value_from_cache)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.get_value_from_cache', mock_get_value_from_cache)
     # monkeypatch.setattr('lexie.caching.set_value_in_cache', mock_set_value_in_cache)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.set_value_in_cache', mock_set_value_in_cache)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.set_value_in_cache', mock_set_value_in_cache)
     monkeypatch.setattr('lexie.drivers.shelly.shelly1.HWDevice.__init__', MockHWDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.get_status', mock_get_status)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.get_status', mock_get_status)
     with app.app_context():
         testdevice = LexieDevice(device_id='1234')
         testdevice.set_status('test', 'test_value')

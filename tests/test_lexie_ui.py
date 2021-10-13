@@ -3,11 +3,11 @@ from urllib.parse import urlparse
 
 import pytest
 
-from lexie.smarthome.LexieDevice import LexieDevice, LexieDeviceType
+from lexie.smarthome.lexiedevice import LexieDevice, LexieDeviceType
 from lexie.views import get_drivers
 from tests.fixtures.test_flask_app import app, client, routines_db
 from tests.fixtures.mock_lexieclasses import MockLexieDevice, MockRoom
-from lexie.smarthome.Routine import DeviceAction, DeviceEvent, Step, StepType, Trigger, TriggerType
+from lexie.smarthome.routine import DeviceAction, DeviceEvent, Step, StepType, Trigger, TriggerType
 
 
 def mock_os_listdir(directory):
@@ -67,7 +67,7 @@ def test_add_device_post(monkeypatch, client):
         global passed_arguments_to_mock
         passed_arguments_to_mock = kwargs
         return "666666"
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.new', mock_lexiedevice_new)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.new', mock_lexiedevice_new)
     result = client.post('/ui/add-device', data={
         #         device_name=device_data['device_name'],
         # device_type=LexieDeviceType(device_data['device_type']),
@@ -92,9 +92,9 @@ def test_move_device(monkeypatch, client):
         global passed_arguments_to_mock
         passed_arguments_to_mock = room
         return
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.move', mock_move_device)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.move', mock_move_device)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     result = client.post('/ui/move_device', data={
         'device_id': '1234',
         'room_id': '1234',
@@ -104,20 +104,20 @@ def test_move_device(monkeypatch, client):
     assert passed_arguments_to_mock.id == '1234'
 
 def test_routine_list_get(monkeypatch, client, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     result = client.get('/ui/routines')
     assert result.status_code == 200
 
 def test_add_routine_get(monkeypatch, client, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     result = client.get('/ui/add-routine')
     assert result.status_code == 200
 
 def test_add_routine_post_deviceevent(monkeypatch, client, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     result = client.post('/ui/add-trigger', data={
         'trigger_type': 'DeviceEvent',
         'routine_name': 'Test routine',
@@ -183,8 +183,8 @@ def test_add_routine_post_timer_multiple_days(client, app):
         assert len(trigger.timer.schedules) == 6
 
 def test_edit_routine_get(monkeypatch, client, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     with app.app_context():
         trigger = Trigger.new(
             trigger_type=TriggerType.DeviceEvent,
@@ -196,8 +196,8 @@ def test_edit_routine_get(monkeypatch, client, app, routines_db):
     assert result.status_code == 200
 
 def test_edit_routine_post_step_deviceaction(monkeypatch, client, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     with app.app_context():
         trigger = Trigger.new(
             trigger_type=TriggerType.DeviceEvent,
@@ -217,8 +217,8 @@ def test_edit_routine_post_step_deviceaction(monkeypatch, client, app, routines_
         assert next_step is not None
 
 def test_edit_routine_post_step_delay(monkeypatch, client, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     with app.app_context():
         trigger = Trigger.new(
             trigger_type=TriggerType.DeviceEvent,
@@ -237,8 +237,8 @@ def test_edit_routine_post_step_delay(monkeypatch, client, app, routines_db):
         assert next_step is not None
 
 def test_edit_routine_add_two_steps(monkeypatch, client, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     with app.app_context():
         trigger = Trigger.new(
             trigger_type=TriggerType.DeviceEvent,
@@ -263,8 +263,8 @@ def test_edit_routine_add_two_steps(monkeypatch, client, app, routines_db):
         assert isinstance(second_step, Step)
 
 def test_remove_action(monkeypatch, client, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='Test routine',
@@ -281,8 +281,8 @@ def test_remove_action(monkeypatch, client, app, routines_db):
     assert result.status_code == 302
 
 def test_remove_routine(monkeypatch, client, app, routines_db):
-    monkeypatch.setattr('lexie.smarthome.LexieDevice.LexieDevice.__init__', MockLexieDevice.__init__)
-    monkeypatch.setattr('lexie.smarthome.Room.Room.__init__', MockRoom.__init__)
+    monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', MockLexieDevice.__init__)
+    monkeypatch.setattr('lexie.smarthome.room.Room.__init__', MockRoom.__init__)
     with app.app_context():
         trigger = Trigger.new(
             name='Test routine',
