@@ -4,10 +4,10 @@ import logging
 from flask import Blueprint
 from flask.json import jsonify
 
+from lexie.smarthome import eventlog
 from lexie.smarthome.events import send_event
 from lexie.smarthome.exceptions import InvalidEventException, NotFoundException
 from lexie.smarthome.lexiedevice import LexieDevice
-from lexie.smarthome import eventlog
 
 # Register blueprint
 events_bp = Blueprint('events', __name__, url_prefix='/events')

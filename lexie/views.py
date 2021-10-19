@@ -6,13 +6,13 @@ import os
 from flask import Blueprint, redirect, render_template, request
 from jinja2 import TemplateNotFound
 
+from lexie.smarthome import models
 from lexie.smarthome.lexiedevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices,
                                          get_all_devices_with_rooms)
 from lexie.smarthome.room import Room
 from lexie.smarthome.routine import (DeviceAction, DeviceEvent, Step, StepType,
                                      Trigger, TriggerTimer, TriggerType)
-from lexie.smarthome import models
 
 # Register blueprint
 ui_bp = Blueprint('ui', __name__, url_prefix='/ui')
@@ -175,7 +175,6 @@ def index(path): # pylint: disable=too-many-return-statements
         if segment == 'eventlog':
             # events = models.db.Query(models.EventLog).order_by(models.EventLog.timestamp.desc()).limit(100)
             events = models.EventLog.query.order_by(models.EventLog.timestamp.desc()).limit(100)
-            a = events[0]
             return render_template( segment + '.html', events=events)
         if segment in ('routines'):
             triggers = Trigger.get_all()

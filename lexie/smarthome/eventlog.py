@@ -1,5 +1,6 @@
 from lexie.smarthome import models
 
+
 def log(event:str):
     """ saves an event to Event Log """
     eventlog = models.EventLog(event=event)

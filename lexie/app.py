@@ -11,12 +11,11 @@ from flaskthreads import AppContextThread
 
 from lexie.caching import flush_cache
 from lexie.extensions import scheduler, socketio
-from lexie.smarthome import models
+from lexie.smarthome import eventlog, models
 from lexie.smarthome.lexiedevice import LexieDevice
 from lexie.smarthome.models import db as sqla_db
 from lexie.smarthome.models import prepare_db
 from lexie.smarthome.routine import DeviceEvent, Trigger
-from lexie.smarthome import eventlog
 
 EVENT_LISTENER_CONTINUE = True
 EVENT_LISTENER_THREAD = threading.Thread() # pylint: disable=bad-thread-instantiation

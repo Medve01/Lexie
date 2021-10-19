@@ -292,3 +292,7 @@ def test_remove_routine(monkeypatch, client, app, routines_db):
         )
     result = client.get('/ui/remove-routine/' + trigger.id)
     assert result.status_code == 302
+
+def test_events_get(monkeypatch, client, app):
+    result = client.get('/ui/eventlog')
+    assert result.status_code == 200

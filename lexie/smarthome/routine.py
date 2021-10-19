@@ -6,9 +6,9 @@ from flask import current_app
 from shortuuid import uuid
 
 from lexie.extensions import scheduler
+from lexie.smarthome import eventlog
 from lexie.smarthome.exceptions import NotFoundException
 from lexie.smarthome.lexiedevice import LexieDevice
-from lexie.smarthome import eventlog
 
 
 class InvalidParametersException(Exception):
