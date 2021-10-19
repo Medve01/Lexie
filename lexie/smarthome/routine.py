@@ -7,7 +7,8 @@ from shortuuid import uuid
 
 from lexie.extensions import scheduler
 from lexie.smarthome.exceptions import NotFoundException
-from lexie.smarthome.LexieDevice import LexieDevice
+from lexie.smarthome.lexiedevice import LexieDevice
+from lexie.smarthome import eventlog
 
 
 class InvalidParametersException(Exception):
@@ -44,6 +45,7 @@ def fire_trigger(trigger_id: str):
     with scheduler.app.app_context():
         trigger = Trigger(trigger_id)
         trigger.fire()
+        eventlog.log(f'Routine triggered: {trigger.name}')
 
 def push_to_db(table, value):
     """ stores dict in TinyDB. key is dict['id'] """

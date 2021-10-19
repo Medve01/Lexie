@@ -1,8 +1,8 @@
 import pytest
 
 from lexie.smarthome.models import db as sqla_db
-from lexie.smarthome.Room import Room
-from lexie.smarthome.LexieDevice import LexieDevice
+from lexie.smarthome.room import Room
+from lexie.smarthome.lexiedevice import LexieDevice
 from tests.fixtures.test_flask_app import app
 
 

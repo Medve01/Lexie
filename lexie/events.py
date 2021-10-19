@@ -6,7 +6,8 @@ from flask.json import jsonify
 
 from lexie.smarthome.events import send_event
 from lexie.smarthome.exceptions import InvalidEventException, NotFoundException
-from lexie.smarthome.LexieDevice import LexieDevice
+from lexie.smarthome.lexiedevice import LexieDevice
+from lexie.smarthome import eventlog
 
 # Register blueprint
 events_bp = Blueprint('events', __name__, url_prefix='/events')
@@ -20,6 +21,7 @@ def handle_event(device_id, event: str):
     if event not in VALID_EVENTS:
         raise InvalidEventException
     send_event(device.device_id, event, event_type='status')
+    eventlog.log(f'Event received from {device.device_name}: {event}')
     return jsonify("Event received.")
 
 @events_bp.route('/<device_id>/<event>')

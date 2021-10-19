@@ -5,7 +5,7 @@ from flask import current_app
 
 from lexie import caching
 from lexie.smarthome.events import send_event
-from lexie.smarthome.ILexieDevice import ILexieDevice
+from lexie.smarthome.ilexiedevice import ILexieDevice
 
 
 class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods

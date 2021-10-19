@@ -6,7 +6,7 @@ import urllib.request
 import requests
 from flask import current_app
 
-from lexie.smarthome.ILexieDevice import ILexieDevice
+from lexie.smarthome.ilexiedevice import ILexieDevice
 
 
 class HWDevice(ILexieDevice): # pylint: disable=too-few-public-methods

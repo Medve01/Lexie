@@ -1,6 +1,6 @@
 import pytest
-from lexie.smarthome.LexieDevice import LexieDeviceType
-from lexie.smarthome.Room import Room
+from lexie.smarthome.lexiedevice import LexieDeviceType
+from lexie.smarthome.room import Room
 
 device_data={
                 "device_id": "123456",
@@ -14,7 +14,7 @@ device_data={
             }
 
 class MockRoom: #pylint: disable=too-few-public-methods
-    """ mocks lexie.smarthome.Room.Room """
+    """ mocks lexie.smarthome.room.Room """
     def __init__(self, room_id = None):
         """ constructor """
         self.id = room_id

@@ -12,10 +12,11 @@ from flaskthreads import AppContextThread
 from lexie.caching import flush_cache
 from lexie.extensions import scheduler, socketio
 from lexie.smarthome import models
-from lexie.smarthome.LexieDevice import LexieDevice
+from lexie.smarthome.lexiedevice import LexieDevice
 from lexie.smarthome.models import db as sqla_db
 from lexie.smarthome.models import prepare_db
-from lexie.smarthome.Routine import DeviceEvent, Trigger
+from lexie.smarthome.routine import DeviceEvent, Trigger
+from lexie.smarthome import eventlog
 
 EVENT_LISTENER_CONTINUE = True
 EVENT_LISTENER_THREAD = threading.Thread() # pylint: disable=bad-thread-instantiation
@@ -31,6 +32,7 @@ def check_and_fire_trigger(event_type, device_id):
                 trigger = Trigger(trigger_['id'])
                 routine_thread = AppContextThread(target=trigger.fire)
                 routine_thread.start()
+                eventlog.log(f'Routine triggered: {trigger.name}')
 
 def event_listener_cancel():
     """ stops thread loop """
