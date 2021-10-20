@@ -1,6 +1,6 @@
 import pytest
 
-from tests.fixtures.test_flask_app import MOCK_CALLED, app, client
+from tests.fixtures.test_flask_app import MOCK_CALLED, app, api_client
 from tests.fixtures.mock_lexieclasses import MockLexieDevice, device_data
 from lexie.smarthome.exceptions import InvalidEventException, NotFoundException
 from lexie.smarthome import models
@@ -12,7 +12,7 @@ MOCK_CALL = {}
 
 # def test_event_hook_invalid_event(client):
 #     """tests default page"""
-#     res = client.get('/events/1234/switched_on')
+#     res = api_client.get('/events/1234/switched_on')
 #     assert res.json == {"Error": "Invalid event"}
 
 @pytest.mark.parametrize(
@@ -65,7 +65,7 @@ MOCK_CALL = {}
             {}
         )    ]
 )
-def test_event_hook(monkeypatch, client, event, status, results):
+def test_event_hook(monkeypatch, api_client, event, status, results):
     global MOCK_CALL
     MOCK_CALL = {}
     def mock_send_event(device_id, event, event_type):
@@ -91,16 +91,16 @@ def test_event_hook(monkeypatch, client, event, status, results):
     monkeypatch.setattr('lexie.events.send_event', mock_send_event)
     # monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.set_status', mock_set_status)
     # monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.get_status', mock_get_status)
-    res = client.get('/events/1234/' + event)
+    res = api_client.get('/events/1234/' + event)
     assert res.status_code == status
     assert MOCK_CALL == results
 
-def test_event_hook_nodevice(monkeypatch, client):
+def test_event_hook_nodevice(monkeypatch, api_client):
     def mocklexiedevice_init(self, device_id):
         raise NotFoundException
     monkeypatch.setattr('lexie.smarthome.lexiedevice.LexieDevice.__init__', mocklexiedevice_init)
 
-    res = client.get('events/6666/on')
+    res = api_client.get('events/6666/on')
     assert res.status_code == 404
 
 MOCK_SIO_CALL = {}

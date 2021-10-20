@@ -1,0 +1,45 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+	<div class="content">
+		<div class="page-inner">
+			<div class="page-header">
+                Please specify API key for logging in to Lexie Smart Home
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-title">API key</div>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-md-6 col-lg-4">
+                                    <form action="/ui/login">
+                                        <input type=text name="apikey"></input>
+                                        <input type="submit"></input>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+	<!-- Atlantis DEMO methods, don't include it in your project! -->
+	<script src="/static/assets/js/setting-demo2.js"></script>
+
+{% endblock javascripts %}	

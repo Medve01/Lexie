@@ -1,0 +1,57 @@
+{% extends "layouts/base.html" %}
+
+{% block title %} UI Forms {% endblock %} 
+
+<!-- Specific Page CSS goes HERE  -->
+{% block stylesheets %}{% endblock stylesheets %}
+
+{% block content %}
+
+	<div class="content">
+		<div class="page-inner">
+			<div class="page-header">
+				<ul class="breadcrumbs">
+					<li class="nav-home">
+						<a href="#">
+							<i class="fab fa-connectdevelop"></i>
+						</a>
+					</li>
+					<li class="separator">
+						<i class="flaticon-right-arrow"></i>
+					</li>
+					<li class="nav-item">
+						<a href="#">Add device</a>
+					</li>
+				</ul>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+					<div class="card">
+						<div class="card-header">
+							<div class="card-title">API key</div>
+						</div>
+						<div class="card-body">
+							<div class="row">
+								<div class="col-md-6 col-lg-4">
+                                    <p>Your new API key is:</p>
+                                    <p><input type=text size="100" value="{{apikey}}"></input></p>
+                                    <p>Save it somewhere, as this is the only time I can show it to you.</p>
+                                    <button class="btn btn-success" onclick="window.location.href='/ui/dashboard'">Back to the Dashboard</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+				</div>
+			</div>
+		</div>
+	</div>
+
+{% endblock content %}
+
+<!-- Specific Page JS goes HERE  -->
+{% block javascripts %}
+
+	<!-- Atlantis DEMO methods, don't include it in your project! -->
+	<script src="/static/assets/js/setting-demo2.js"></script>
+
+{% endblock javascripts %}	

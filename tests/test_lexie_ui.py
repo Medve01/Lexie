@@ -293,6 +293,22 @@ def test_remove_routine(monkeypatch, client, app, routines_db):
     result = client.get('/ui/remove-routine/' + trigger.id)
     assert result.status_code == 302
 
-def test_events_get(monkeypatch, client, app):
+def test_events_get(client, app):
     result = client.get('/ui/eventlog')
+    assert result.status_code == 200
+
+def test_apikey_get(client):
+    result = client.get('/ui/apikey')
+    assert result.status_code == 200
+
+def test_apikey_generate(monkeypatch, client):
+    def mock_generate_apikey():
+        return 'asdfasdf'
+
+    monkeypatch.setattr('lexie.apikey.generate_apikey', mock_generate_apikey)
+    result = client.get('/ui/apikey/generate')
+    assert result.status_code == 200
+
+def test_login_get(client):
+    result = client.get('/ui/login')
     assert result.status_code == 200

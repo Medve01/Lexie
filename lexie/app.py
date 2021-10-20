@@ -20,6 +20,9 @@ from lexie.smarthome.routine import DeviceEvent, Trigger
 EVENT_LISTENER_CONTINUE = True
 EVENT_LISTENER_THREAD = threading.Thread() # pylint: disable=bad-thread-instantiation
 
+# def check_api_authentication_header(headers):
+
+
 def check_and_fire_trigger(event_type, device_id):
     """ checks if we have a trigger for the incoming event and if yes, fires it """
     with current_app.app_context():
@@ -80,6 +83,9 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     flush_cache()
     app = Flask(__name__)
     app.config.from_file("config.json", load=json.load)
+    with open('flask_secret.json', 'r', encoding='UTF-8') as secret_file:
+        flask_secret = json.load(secret_file)
+    app.secret_key = flask_secret['secret']
     @app.route('/')
     def index():
         return redirect('/ui')
@@ -99,6 +105,7 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     app.register_blueprint(step_api_bp)
     sqla_db.app = app
     sqla_db.init_app(app)
+    # login_manager.init_app(app)
     prepare_db()
     socketio.init_app(app, cors_allowed_origins='*')
     if scheduler.state != 0:

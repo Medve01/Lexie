@@ -4,7 +4,7 @@ import pytest
 
 from lexie.smarthome.lexiedevice import LexieDevice, LexieDeviceType
 from lexie.smarthome import exceptions
-from tests.fixtures.test_flask_app import app, client
+from tests.fixtures.test_flask_app import app, api_client as client, client as noauth_client
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from lexie.smarthome.routine import StepType, TriggerType, DeviceEvent
 from lexie.smarthome.exceptions import NotFoundException
@@ -58,6 +58,14 @@ class MockStep:
     def delete(self):
         global MOCK_CALLED
         MOCK_CALLED = 'MockStep.delete'
+
+def test_step_get_noauth(noauth_client):
+    result = noauth_client.get('/api/step/1234')
+    assert result.status_code == 403
+
+def test_trigger_get_noauth(noauth_client):
+    result = noauth_client.get('/api/trigger/1234')
+    assert result.status_code == 403
 
 def test_step_delete(monkeypatch, app, client):
     monkeypatch.setattr('lexie.smarthome.routine.Step.__init__', MockStep.__init__)

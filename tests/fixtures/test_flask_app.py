@@ -3,11 +3,15 @@ import os
 import tinydb
 import pytest
 
+from flask import testing
+from werkzeug.datastructures import Headers
 from lexie.app import create_app
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from lexie.caching import flush_cache
+from lexie.apikey import generate_apikey
 
 MOCK_CALLED=""
+TEST_API_KEY = ""
 
 @pytest.fixture
 def app(monkeypatch):
@@ -85,5 +89,25 @@ def routines_db(app):
 
 @pytest.fixture
 def client(app):
+    _client = app.test_client()
+    return _client
+
+class ApiTestClient(testing.FlaskClient):
+    def open(self, *args, **kwargs):
+        global TEST_API_KEY
+        api_key_headers = Headers({
+            'X-API-KEY': TEST_API_KEY
+        })
+        headers = kwargs.pop('headers', Headers())
+        headers.extend(api_key_headers)
+        kwargs['headers'] = headers
+        return super().open(*args, **kwargs)
+
+@pytest.fixture
+def api_client(app):
+    with app.app_context():
+        global TEST_API_KEY
+        TEST_API_KEY = generate_apikey()
+    app.test_client_class = ApiTestClient
     _client = app.test_client()
     return _client

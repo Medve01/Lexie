@@ -1,11 +1,11 @@
 
-# Flask modules
 import logging
 import os
 
 from flask import Blueprint, redirect, render_template, request
 from jinja2 import TemplateNotFound
 
+from lexie.apikey import generate_apikey, have_apikey
 from lexie.smarthome import models
 from lexie.smarthome.lexiedevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices,
@@ -45,6 +45,19 @@ def get_drivers():
 def get_attributes(cls):
     """ enumarates members of a given class, exluding private ones """
     return [i for i in cls.__dict__.keys() if not i.startswith('_')] # pylint: disable=consider-iterating-dictionary
+
+@ui_bp.route('/apikey/generate', methods=['GET'])
+def apikey_generate():
+    """ create a new api key, store it in TinyDB. Override if we have an existing one """
+    apikey = generate_apikey()
+    return render_template('apikey_generate.html', apikey=apikey)
+
+
+@ui_bp.route('/apikey', methods=['GET'])
+def apikey_get():
+    """ If we have an API key stored, then show this fact UI. """
+    return render_template('apikey.html', have_apikey = have_apikey())
+
 @ui_bp.route('/move_device', methods=['POST'])
 def move_device():
     """ post target for dashboard move device modal form """
@@ -172,6 +185,8 @@ def index(path): # pylint: disable=too-many-return-statements
                 devices = devices,
                 device_events = device_events
             )
+        if segment == 'login':
+            return render_template( segment + '.html')
         if segment == 'eventlog':
             # events = models.db.Query(models.EventLog).order_by(models.EventLog.timestamp.desc()).limit(100)
             events = models.EventLog.query.order_by(models.EventLog.timestamp.desc()).limit(100)
