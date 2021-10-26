@@ -5,6 +5,8 @@ import threading
 import time
 
 import tinydb
+from os.path import exists
+from shortuuid import uuid
 from flask import Flask, current_app, redirect, request
 from flaskthreads import AppContextThread
 
@@ -82,8 +84,15 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     flush_cache()
     app = Flask(__name__)
     app.config.from_file("config.json", load=json.load)
-    with open('flask_secret.json', 'r', encoding='UTF-8') as secret_file:
-        flask_secret = json.load(secret_file)
+    try:
+        with open('flask_secret.json', 'r', encoding='UTF-8') as secret_file:
+            flask_secret = json.load(secret_file)
+    except: #pylint: disable=bare-except
+        flask_secret = {
+            'secret': uuid() + uuid() + uuid()
+        }
+        with open('flask_secret.json', 'w') as secret_file:
+            json.dump(flask_secret, secret_file)
     app.secret_key = flask_secret['secret']
     @app.route('/')
     def index():

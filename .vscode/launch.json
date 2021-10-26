@@ -19,7 +19,8 @@
             // "cwd": "${workspaceFolder}/lexie",
             "env": {
                 "FLASK_ENV": "development",
-                "FLASK_DEBUG": "0"
+                "FLASK_DEBUG": "0",
+                "FLASK_RUN_PORT": "5005"
             },
             "args": [
                 "run",
