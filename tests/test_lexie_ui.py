@@ -383,3 +383,4 @@ def test_change_password_post(monkeypatch, client):
     result = client.post('/ui/change-password', data=dict(old_password='wrongpassword', new_password='newpassword'))
     assert result.status_code == 200
     assert str(result.data).find('The current password you specified is not correct')
+

@@ -121,6 +121,6 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
         """checks if we have a password stored. If not, redirects to setup page
         """
         if request.path != '/ui/setup' and not request.path.startswith("/static") and not check_if_password_exists():
-            return redirect('/ui/setup')
+            return redirect('/ui/setup') # pragma: nocover
         return None
     return app
