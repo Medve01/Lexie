@@ -41,6 +41,15 @@ def test_shelly_bulb_rgbw_init():
 )
 def test_shelly_bulb_rgbw_turn_onoff(monkeypatch, onoff, results):
     """ tests if we can turn a shelly 1 on """
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 0
+
     class MockResponse(object):
         def __init__(self, url) -> None:
             self.status_code = 200
@@ -54,6 +63,9 @@ def test_shelly_bulb_rgbw_turn_onoff(monkeypatch, onoff, results):
     def mock_get(url):
         return MockResponse(url)
     monkeypatch.setattr(requests, 'get', mock_get)
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
     testdevice = HWDevice(device_data)
 
     assert testdevice.action_turn(onoff) == results
@@ -82,6 +94,15 @@ def test_shelly_bulb_rgbw_turn_onoff_unavailable(monkeypatch):
 
 def test_shelly_bulb_rgbw_toggle(monkeypatch):
     """ tests toggle """
+
+    class MockSocket(object):
+        def __init__(self, family=-1, type=-1, proto=-1, fileno=None) -> None:
+            pass
+
+    def mock_socket_settimeout(self, timeout):
+        return
+    def mock_sock_connect_ex(self, target):
+        return 0
     class MockResponse(object):
         def __init__(self, url) -> None:
             self.status_code = 200
@@ -90,6 +111,10 @@ def test_shelly_bulb_rgbw_toggle(monkeypatch):
     def mock_get(url):
         return MockResponse(url)
     monkeypatch.setattr(requests, 'get', mock_get)
+    monkeypatch.setattr(requests, 'get', mock_get)
+    monkeypatch.setattr('socket.socket.__init__', MockSocket.__init__)
+    monkeypatch.setattr('socket.socket.settimeout', mock_socket_settimeout)
+    monkeypatch.setattr('socket.socket.connect_ex', mock_sock_connect_ex)
     testdevice = HWDevice(device_data)
     assert testdevice.action_toggle() == {
                                                     "ison": False,
