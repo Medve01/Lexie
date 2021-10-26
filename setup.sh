@@ -9,4 +9,5 @@ then
 	cp -f ./lexie-gunicorn.service /etc/systemd/system/lexie-gunicorn.service
 	systemctl daemon-reload
 fi
+pip3 install -r requirements.txt
 systemctl restart lexie-gunicorn
