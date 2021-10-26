@@ -10,25 +10,24 @@
 	<div class="content">
 		<div class="page-inner">
 			<div class="page-header">
-                Lexie Smarthome Login
+				<ul class="breadcrumbs">
+                    Lexie Smarthome Setup
+				</ul>
 			</div>
 			<div class="row">
 				<div class="col-md-12">
 					<div class="card">
 						<div class="card-header">
-							<div class="card-title">Please specify UI password for logging in to Lexie Smart Home</div>
+							<div class="card-title">UI password</div>
 						</div>
 						<div class="card-body">
 							<div class="row">
 								<div class="col-md-6 col-lg-4">
-									{% if message %}
-										<div class="card-sub">
-											{{ message }}
-										</div>
-									{% endif %}
-                                    <form action="/ui/login" method="POST">
-                                        <p><input type=password name="password"></input></p>
-                                        <input type="submit" class="btn btn-success" value="Login"></input>
+                                    <p>Please specify a password for Lexie Smarthome UI:</p>
+                                    <p><kbd>Hint:</kbd> Use a password manager to generate and store your password</p>
+                                    <form action="/ui/setup" method="POST">
+                                        <p><input type=password name="password" size="40" value="" required></input></p>
+                                        <input type="submit" class="btn btn-success" value="Save password"></input>
                                     </form>
                                 </div>
                             </div>

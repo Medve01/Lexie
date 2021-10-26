@@ -5,7 +5,7 @@ import pytest
 
 from lexie.smarthome.lexiedevice import LexieDevice, LexieDeviceType
 from lexie.smarthome import exceptions
-from tests.fixtures.test_flask_app import app, api_client, client as noauth_client
+from tests.fixtures.test_flask_app import app, api_client, noauth_client
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from tests.fixtures.mock_lexieclasses import device_data
 

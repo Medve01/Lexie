@@ -3,9 +3,13 @@ import logging
 import os
 
 from flask import Blueprint, redirect, render_template, request
+from flask_login import login_required, login_user
 from jinja2 import TemplateNotFound
 
-from lexie.apikey import generate_apikey, have_apikey
+from lexie.authentication import (User, check_if_password_exists,
+                                  check_password, generate_apikey, have_apikey,
+                                  set_password)
+from lexie.extensions import login_manager
 from lexie.smarthome import models
 from lexie.smarthome.lexiedevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices,
@@ -46,7 +50,67 @@ def get_attributes(cls):
     """ enumarates members of a given class, exluding private ones """
     return [i for i in cls.__dict__.keys() if not i.startswith('_')] # pylint: disable=consider-iterating-dictionary
 
+@login_manager.user_loader
+def load_user(user_id): # pylint: disable=unused-argument
+    """ loads user form lgin manager """
+    user = User()
+    return user
+
+@ui_bp.route('/change-password', methods=['POST'])
+def change_password_post():
+    """Changes UI password
+
+    Returns:
+        flask.redirect or flask.render_template
+    """
+    old_password = request.form.get('old_password')
+    new_password = request.form.get('new_password')
+    if check_password(old_password):
+        set_password(new_password)
+        return redirect('/ui/logout')
+    return render_template('change-password.html', message='The current password you specified is not correct, password did not change')
+
+@ui_bp.route('login', methods=['GET'])
+def login_get():
+    """ renders the login page """
+    return render_template('login.html')
+
+@ui_bp.route('login', methods=['POST'])
+def login():
+    """Logs in user"""
+    password = request.form.get('password')
+    if check_password(password):
+        login_user(user=User(), remember=True)
+        return redirect('/ui/')
+    return render_template('login.html', message='Invalid password')
+
+@ui_bp.route('/setup', methods=['GET'])
+def setup_get():
+    """First checks if we already have a password created. If yes, redirect to Dashboard.
+       If not, asks for a password, hashes it and stores in database.
+
+    Returns:
+        flask.redirect or flask.render_template
+    """
+    if check_if_password_exists():
+        return redirect('/ui/')
+    return render_template('setup.html')
+
+@ui_bp.route('/setup', methods=['POST'])
+def setup_post():
+    """First checks if we already have a password created. If yes, redirect to Dashboard.
+       If not, asks for a password, hashes it and stores in database.
+
+    Returns:
+        flask.redirect or flask.render_template
+    """
+    if not check_if_password_exists():
+        set_password(request.form.get('password'))
+    return redirect('/ui/')
+
+
 @ui_bp.route('/apikey/generate', methods=['GET'])
+@login_required
 def apikey_generate():
     """ create a new api key, store it in TinyDB. Override if we have an existing one """
     apikey = generate_apikey()
@@ -54,11 +118,13 @@ def apikey_generate():
 
 
 @ui_bp.route('/apikey', methods=['GET'])
+@login_required
 def apikey_get():
     """ If we have an API key stored, then show this fact UI. """
     return render_template('apikey.html', have_apikey = have_apikey())
 
 @ui_bp.route('/move_device', methods=['POST'])
+@login_required
 def move_device():
     """ post target for dashboard move device modal form """
     device = LexieDevice(request.form.get('device_id'))
@@ -66,6 +132,7 @@ def move_device():
     return redirect('/ui')
 
 @ui_bp.route('/add-trigger', methods=['POST'])
+@login_required
 def add_trigger():
     """ post target for New routine page """
     form_trigger_type = request.form.get('trigger_type')
@@ -109,6 +176,7 @@ def add_trigger():
     return redirect('/ui/edit-routine/' + trigger.id)
 
 @ui_bp.route('edit-routine/<trigger_id>', methods=['GET'])
+@login_required
 def add_step(trigger_id):
     """ Renders the "add step" page """
     trigger = Trigger(trigger_id)
@@ -127,6 +195,7 @@ def add_step(trigger_id):
         steps = steps)
 
 @ui_bp.route('edit-routine/<trigger_id>', methods=['POST'])
+@login_required
 def save_step(trigger_id):
     """ post target for /ui/edit-routine """
     trigger = Trigger(trigger_id)
@@ -150,6 +219,7 @@ def save_step(trigger_id):
     return redirect('/ui/edit-routine/' + trigger_id)
 
 @ui_bp.route('/remove-action/<trigger_id>/<step_id>')
+@login_required
 def remove_action(trigger_id, step_id):
     """ removes an action from a routine chain """
     step = Step(step_id)
@@ -157,6 +227,7 @@ def remove_action(trigger_id, step_id):
     return redirect('/ui/edit-routine/' + trigger_id)
 
 @ui_bp.route('/remove-routine/<trigger_id>')
+@login_required
 def remove_routine(trigger_id):
     """ Deletes a routine """
     trigger = Trigger(trigger_id)
@@ -166,6 +237,7 @@ def remove_routine(trigger_id):
 # App main route + generic routing
 @ui_bp.route('/', defaults={'path': 'dashboard'})
 @ui_bp.route('/<path>')
+@login_required
 def index(path): # pylint: disable=too-many-return-statements
     """ renders default ui page """
     # I should really refactor this...
@@ -185,8 +257,6 @@ def index(path): # pylint: disable=too-many-return-statements
                 devices = devices,
                 device_events = device_events
             )
-        if segment == 'login':
-            return render_template( segment + '.html')
         if segment == 'eventlog':
             # events = models.db.Query(models.EventLog).order_by(models.EventLog.timestamp.desc()).limit(100)
             events = models.EventLog.query.order_by(models.EventLog.timestamp.desc()).limit(100)
