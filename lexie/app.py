@@ -4,13 +4,13 @@ import json
 import threading
 import time
 
-import click
 import tinydb
-from flask import Flask, current_app, redirect
+from flask import Flask, current_app, redirect, request
 from flaskthreads import AppContextThread
 
+from lexie.authentication import check_if_password_exists
 from lexie.caching import flush_cache
-from lexie.extensions import scheduler, socketio
+from lexie.extensions import login_manager, scheduler, socketio
 from lexie.smarthome import eventlog, models
 from lexie.smarthome.lexiedevice import LexieDevice
 from lexie.smarthome.models import db as sqla_db
@@ -19,6 +19,8 @@ from lexie.smarthome.routine import DeviceEvent, Trigger
 
 EVENT_LISTENER_CONTINUE = True
 EVENT_LISTENER_THREAD = threading.Thread() # pylint: disable=bad-thread-instantiation
+
+# def check_api_authentication_header(headers):
 
 def check_and_fire_trigger(event_type, device_id):
     """ checks if we have a trigger for the incoming event and if yes, fires it """
@@ -80,6 +82,9 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     flush_cache()
     app = Flask(__name__)
     app.config.from_file("config.json", load=json.load)
+    with open('flask_secret.json', 'r', encoding='UTF-8') as secret_file:
+        flask_secret = json.load(secret_file)
+    app.secret_key = flask_secret['secret']
     @app.route('/')
     def index():
         return redirect('/ui')
@@ -99,6 +104,8 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     app.register_blueprint(step_api_bp)
     sqla_db.app = app
     sqla_db.init_app(app)
+    login_manager.init_app(app)
+    login_manager.login_view = "ui.login"
     prepare_db()
     socketio.init_app(app, cors_allowed_origins='*')
     if scheduler.state != 0:
@@ -109,9 +116,11 @@ def create_app(testing:bool=False):#pylint: disable=unused-argument
     scheduler.init_app(app)
     scheduler.start()
     atexit.register(event_listener_cancel)
-    @app.cli.command('create-db')
-    def create_db_command(): # pragma: nocover
-        """ Clear existing data and create new tables """
-        sqla_db.create_all()
-        click.echo('Database initialized')
+    @app.before_request
+    def check_if_ui_pw_created():
+        """checks if we have a password stored. If not, redirects to setup page
+        """
+        if request.path != '/ui/setup' and not request.path.startswith("/static") and not check_if_password_exists():
+            return redirect('/ui/setup') # pragma: nocover
+        return None
     return app

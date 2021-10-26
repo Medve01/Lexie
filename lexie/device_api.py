@@ -2,7 +2,9 @@ import json
 
 from flask import Blueprint, current_app, request
 from flask.json import jsonify
+from flask_login import current_user
 
+from lexie.authentication import check_apikey
 from lexie.smarthome import exceptions
 from lexie.smarthome.exceptions import NotFoundException
 from lexie.smarthome.lexiedevice import (LexieDevice, LexieDeviceType,
@@ -10,6 +12,15 @@ from lexie.smarthome.lexiedevice import (LexieDevice, LexieDeviceType,
                                          get_all_devices_with_rooms)
 
 device_api_bp = Blueprint('device_api', __name__, url_prefix='/api/device')
+
+@device_api_bp.before_request
+def validate_api_key():
+    """ if there's no login in session, checks if client sent a valid api key, or has a valid session """
+    if not current_user.is_authenticated:
+        sent_api_key = request.headers.get('X-API-KEY')
+        if sent_api_key is None or not check_apikey(sent_api_key):
+            return jsonify({'Error': 'Authentication error'}), 403
+    return None
 
 @device_api_bp.route('/', methods=["PUT"])
 def device_new():

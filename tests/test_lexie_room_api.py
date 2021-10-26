@@ -5,7 +5,7 @@ import pytest
 
 from lexie.smarthome.room import Room
 from lexie.smarthome import exceptions
-from tests.fixtures.test_flask_app import app, client
+from tests.fixtures.test_flask_app import app, api_client as client, noauth_client
 
 test_room_data = {
                 "room_id": "1234",
@@ -25,6 +25,10 @@ class MockRoom: #pylint: disable=too-few-public-methods
             'room_name': self.name,
         }
         return temp_self
+
+def test_api_get_room_noauth(noauth_client):
+    res = noauth_client.get('/api/room/1234')
+    assert res.status_code == 403
 
 def test_room_api_get_room(monkeypatch, client):
     """" tests /api/room/room_id"""

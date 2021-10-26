@@ -3,11 +3,15 @@ import os
 import tinydb
 import pytest
 
+from flask import testing
+from werkzeug.datastructures import Headers
 from lexie.app import create_app
 from tests.fixtures.mock_lexieclasses import MockLexieDevice
 from lexie.caching import flush_cache
+from lexie.authentication import generate_apikey, set_password
 
 MOCK_CALLED=""
+TEST_API_KEY = ""
 
 @pytest.fixture
 def app(monkeypatch):
@@ -26,6 +30,8 @@ def app(monkeypatch):
     routines_db.table('trigger').truncate()
     routines_db.table('event').truncate()
     routines_db.table('timer').truncate()
+    with _app.app_context():
+        set_password('1234')
     flush_cache()
     import lexie.smarthome.models as models
     models.db.create_all()
@@ -84,6 +90,35 @@ def routines_db(app):
         steps.truncate()
 
 @pytest.fixture
+def noauth_client(app):
+    _client = app.test_client()
+    return _client
+
+@pytest.fixture
 def client(app):
+    _client = app.test_client()
+    result = _client.post(
+        "/ui/login",
+        data=dict(password='1234')
+        )
+    return _client
+
+class ApiTestClient(testing.FlaskClient):
+    def open(self, *args, **kwargs):
+        global TEST_API_KEY
+        api_key_headers = Headers({
+            'X-API-KEY': TEST_API_KEY
+        })
+        headers = kwargs.pop('headers', Headers())
+        headers.extend(api_key_headers)
+        kwargs['headers'] = headers
+        return super().open(*args, **kwargs)
+
+@pytest.fixture
+def api_client(app):
+    with app.app_context():
+        global TEST_API_KEY
+        TEST_API_KEY = generate_apikey()
+    app.test_client_class = ApiTestClient
     _client = app.test_client()
     return _client

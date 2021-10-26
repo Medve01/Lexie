@@ -1,9 +1,20 @@
-from flask import Blueprint
+from flask import Blueprint, request
 from flask.json import jsonify
+from flask_login import current_user
 
+from lexie.authentication import check_apikey
 from lexie.smarthome import exceptions, routine
 
 trigger_api_bp = Blueprint('trigger_api', __name__, url_prefix='/api/trigger')
+
+@trigger_api_bp.before_request
+def validate_api_key():
+    """ if there's no login in session, checks if client sent a valid api key, or has a valid session """
+    if not current_user.is_authenticated:
+        sent_api_key = request.headers.get('X-API-KEY')
+        if sent_api_key is None or not check_apikey(sent_api_key):
+            return jsonify({'Error': 'Authentication error'}), 403
+    return None
 
 @trigger_api_bp.route('/', methods=['GET'])
 def trigger_get_all():
