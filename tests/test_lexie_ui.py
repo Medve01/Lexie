@@ -1,7 +1,6 @@
 from typing import Any
 from urllib.parse import urlparse
 
-from bs4 import BeautifulSoup
 import pytest
 import tinydb
 
